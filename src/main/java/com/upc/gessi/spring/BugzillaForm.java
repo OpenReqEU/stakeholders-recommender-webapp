@@ -1,19 +1,20 @@
 package com.upc.gessi.spring;
 
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 
 public class BugzillaForm extends FormLayout {
 
     private TextField productField;
     private TextField componentField;
-    private TextField statusField;
+    private Select statusField;
 
     public BugzillaForm() {
 
         productField = new TextField();
         componentField = new TextField();
-        statusField = new TextField();
+        statusField = new Select<>("open", "closed");
 
         productField.setLabel("Product");
         productField.setPlaceholder("Platform");
@@ -21,8 +22,8 @@ public class BugzillaForm extends FormLayout {
         componentField.setLabel("Component");
         componentField.setPlaceholder("UI");
 
+        statusField.setPlaceholder("status");
         statusField.setLabel("Status");
-        statusField.setPlaceholder("closed");
 
         add(productField, componentField, statusField);
 
@@ -41,7 +42,7 @@ public class BugzillaForm extends FormLayout {
     }
 
     public String getStatus() {
-        return statusField.getValue();
+        return statusField.getEmptySelectionCaption();
     }
 
     public boolean isFieldEmpty() {

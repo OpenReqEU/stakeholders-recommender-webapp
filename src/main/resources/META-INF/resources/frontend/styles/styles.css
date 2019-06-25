@@ -10,10 +10,22 @@
     margin-top: 6px;
 }
 
+.subsubtitle {
+    font-size: 18px;
+    color: #3fbeae;
+    margin-top: 6px;
+}
+
+.subsubtitle-no-set {
+    font-size: 18px;
+    color: #949494;
+    margin-top: 6px;
+}
+
 .subheader {
-    margin-left: 18px;
     margin-top: 12px;
     position: relative;
+    width: 50%;
 }
 
 .load {
@@ -30,6 +42,10 @@
     background-color: #3fbeae;
     color: #ffffff;
     font-weight: 500;
+}
+
+.header-button {
+    margin-top: 36px;
 }
 
 .filter {

@@ -1,0 +1,45 @@
+package com.upc.gessi.spring;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+
+public class UsernameForm extends HorizontalLayout {
+
+    private String username;
+    private Label label;
+    private Label mail;
+    private Button editUser;
+
+    public UsernameForm() {
+        label = new Label("No user selected, please set username");
+        label.setClassName("subsubtitle-no-set");
+
+        editUser = new Button("Edit user");
+        editUser.setClassName("custom-button");
+        editUser.addClickListener(event -> {
+            openUsernameDialog();
+        });
+
+        mail = new Label();
+        mail.setClassName("subsubtitle");
+
+        add(label, mail, editUser);
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+        label.setText("Welcome");
+        mail.setText(username);
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    private void openUsernameDialog() {
+        UsernameDialog usernameDialog = new UsernameDialog(this);
+        usernameDialog.open();
+    }
+
+}

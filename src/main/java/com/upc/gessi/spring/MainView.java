@@ -3,6 +3,7 @@ package com.upc.gessi.spring;
 import com.upc.gessi.spring.entity.Recommend;
 import com.upc.gessi.spring.entity.Recommendation;
 import com.upc.gessi.spring.entity.Requirement;
+import com.upc.gessi.spring.exception.NotificationException;
 import com.upc.gessi.spring.service.BugzillaService;
 import com.upc.gessi.spring.service.StakeholdersRecommenderService;
 import com.vaadin.flow.component.button.Button;
@@ -27,7 +28,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Route
-@PWA(name = "Project Base for Vaadin Flow with Spring", shortName = "Project Base")
+@PWA(name = "Stakeholders Recommender service web Application", shortName = "ORSR - Webapp")
 @StyleSheet("frontend://styles/styles.css") // Relative to Servlet URL
 public class MainView extends VerticalLayout {
 
@@ -38,6 +39,7 @@ public class MainView extends VerticalLayout {
     private Grid<Recommendation> recommendationGrid = new Grid<>(Recommendation.class);
     private BugzillaForm bugzillaForm = new BugzillaForm();
     private TextField filterText = new TextField();
+    private UsernameForm usernameForm = new UsernameForm();
 
     private Button showRequirementDetails = new Button();
     private Button recommend = new Button();
@@ -64,10 +66,9 @@ public class MainView extends VerticalLayout {
         filterText.setPlaceholder("Search...");
         filterText.setClearButtonVisible(true);
 
-        grid.setColumns("id", "description", "effort", "modified_at");
+        grid.setColumns("id", "description", "modified_at");
         grid.getColumnByKey("id").setFlexGrow(1).setResizable(true);
-        grid.getColumnByKey("description").setFlexGrow(9).setResizable(true);
-        grid.getColumnByKey("effort").setFlexGrow(1).setResizable(true);
+        grid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
         grid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
         recommendationGrid.setColumns("person", "apropiatenessScore", "availabilityScore");
 
@@ -82,7 +83,7 @@ public class MainView extends VerticalLayout {
                     notification = new Notification(
                             "Recommend request sent to Stakeholders Recommender service", 5000,
                             Notification.Position.TOP_CENTER);
-                    List<Recommendation> recommendations = service.recommend(selectedRequirement);
+                    List<Recommendation> recommendations = service.recommend(selectedRequirement, usernameForm.getUsername());
                     setRecommendation(recommendations);
                 }
                 else {
@@ -93,11 +94,14 @@ public class MainView extends VerticalLayout {
                 notification.open();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (NotificationException ne) {
+                Notification notification = new Notification(ne.getMessage(), 5000, Notification.Position.TOP_CENTER);
+                notification.open();
             }
 
         });
 
-        showRequirementDetails.setText("Show requirement details");
+        showRequirementDetails.setText("Show requirement keywords");
         showRequirementDetails.addClickListener(event -> {
             if (selectedRequirement == null) {
                 Notification notification = new Notification(
@@ -105,7 +109,8 @@ public class MainView extends VerticalLayout {
                         Notification.Position.TOP_CENTER);
                 notification.open();
             } else {
-                RequirementDetailsView requirementDetailsView = new RequirementDetailsView(selectedRequirement);
+                RequirementDetailsView requirementDetailsView = new RequirementDetailsView(selectedRequirement,
+                        service.getRequirementKeywords(selectedRequirement.getId()));
                 requirementDetailsView.open();
             }
         });
@@ -155,7 +160,7 @@ public class MainView extends VerticalLayout {
 
         //BUILD LAYOUT
         HorizontalLayout recommendationButtons = new HorizontalLayout();
-        recommendationButtons.add(rejectRecommendation);
+        recommendationButtons.add(acceptRecommendation, rejectRecommendation);
 
         VerticalLayout rightPanel = new VerticalLayout();
         rightPanel.add(recommendationButtons);
@@ -167,8 +172,11 @@ public class MainView extends VerticalLayout {
 
         HorizontalLayout subheader = new HorizontalLayout();
 
+        VerticalLayout toolbar = new VerticalLayout();
+
         Button loadData = new Button("Load data");
-        loadData.setClassName("custom-button");
+        loadData.getClassNames().add("custom-button");
+        loadData.getClassNames().add("header-button");
         loadData.addClickListener(event -> {
             try {
                 if (!bugzillaForm.isFieldEmpty()) {
@@ -184,7 +192,10 @@ public class MainView extends VerticalLayout {
 
         subheader.add(bugzillaForm, loadData);
         subheader.setClassName("subheader");
-        add(header, subheader, mainPanel);
+
+        toolbar.add(usernameForm, subheader);
+
+        add(header, toolbar, mainPanel);
 
         setSizeFull();
 

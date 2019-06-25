@@ -3,6 +3,7 @@ package com.upc.gessi.spring.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.entity.*;
+import com.upc.gessi.spring.exception.NotificationException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -25,6 +26,7 @@ public class StakeholdersRecommenderService {
     private ObjectMapper mapper = new ObjectMapper();
     private BatchProcess batchProcess;
     private List<Recommendation> recommendations;
+    private List<KeywordsBatch> keywordsBatch;
 
     public void setBatchProcess(List<Participant> participants, List<Person> persons, List<Project> project,
                                 List<Requirement> requirements, List<Responsible> responsibles) throws IOException {
@@ -60,13 +62,6 @@ public class StakeholdersRecommenderService {
         return reqs;
     }
 
-    public void loadRequirements(InputStream inputStream) throws IOException {
-        batchProcess = mapper.readValue(inputStream, BatchProcess.class);
-        batch_process();
-    }
-
-
-
     private void batch_process() throws IOException {
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/batch_process?" +
                         "withAvailability=false" +
@@ -75,16 +70,16 @@ public class StakeholdersRecommenderService {
                         "&keywords=true" +
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(batchProcess), "UTF-8"));
-        KeywordsBatch keywordsBatch = mapper.readValue(response, KeywordsBatch.class);
+        keywordsBatch = mapper.readValue(response, new TypeReference<List<KeywordsBatch>>(){});
+        System.out.println("Batch process completed");
     }
 
-    public List<Recommendation> recommend(Requirement first) throws IOException{
+    public List<Recommendation> recommend(Requirement first, String username) throws IOException, NotificationException {
 
-        //FIXME
         Recommend recommend = new Recommend();
-        recommend.setProject(batchProcess.getProjects().get(0));
+        recommend.setProject(findProject(first));
         recommend.setRequirement(first);
-        recommend.setUser(batchProcess.getPersons().get(0));
+        recommend.setUser(findPerson(username));
 
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/recommend?" +
                         "k=10" +
@@ -94,6 +89,21 @@ public class StakeholdersRecommenderService {
 
         return mapper.readValue(response, new TypeReference<List<Recommendation>>(){});
 
+    }
+
+    private Person findPerson(String username) {
+        for (Person p : batchProcess.getPersons()) {
+            if (p.getUsername().equals(username)) return p;
+        }
+        return new Person(username);
+    }
+
+    private Project findProject(Requirement first) throws NotificationException {
+        for (Project p : batchProcess.getProjects()) {
+            if (p.getSpecifiedRequirements() != null
+                    && p.getSpecifiedRequirements().contains(first.getId())) return p;
+        }
+        throw new NotificationException("Requirement not found in any project");
     }
 
     private String sendPostHttpRequest(String url, StringEntity body) throws IOException {
@@ -132,4 +142,12 @@ public class StakeholdersRecommenderService {
         //TODO
     }
 
+    public List<String> getRequirementKeywords(String id) {
+        for (KeywordsBatch keywordsBatchItem : keywordsBatch) {
+            for (RequirementsSkills rs : keywordsBatchItem.getRequirements()) {
+                if (rs.getRequirement().equals(id)) return rs.getSkills();
+            }
+        }
+        return null;
+    }
 }

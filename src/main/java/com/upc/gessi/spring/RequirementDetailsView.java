@@ -10,6 +10,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 
+import java.util.List;
+
 @StyleSheet("frontend://styles/styles.css") // Relative to Servlet URL
 public class RequirementDetailsView extends Dialog {
 
@@ -17,7 +19,7 @@ public class RequirementDetailsView extends Dialog {
     private FormLayout formLayout;
     private Button close;
 
-    public RequirementDetailsView(Requirement requirement) {
+    public RequirementDetailsView(Requirement requirement, List<String> requirementKeywords) {
 
         formLayout = new FormLayout();
         verticalLayout = new VerticalLayout();
@@ -32,7 +34,8 @@ public class RequirementDetailsView extends Dialog {
         description.setValue(requirement.getDescription());
 
         TextField keywords = new TextField("Keywords");
-        keywords.setValue("keyword1, keyword2, keyword3");
+        String keywordsString = requirementKeywords == null ? "" : String.join(", ", requirementKeywords);
+        keywords.setValue(keywordsString);
 
         formLayout.add(id, description, keywords);
 

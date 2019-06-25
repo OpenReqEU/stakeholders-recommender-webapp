@@ -55,6 +55,12 @@ public class BugzillaService {
         Project p=new Project();
         p.setId("Set your team's name here");
         List<String> specifiedRequirements=new ArrayList<String>();
+
+        for (Requirement r : requirements) {
+            specifiedRequirements.add(r.getId());
+        }
+        p.setSpecifiedRequirements(specifiedRequirements);
+
         List<Project> projList=new ArrayList<Project>();
         projList.add(p);
         project=projList;
