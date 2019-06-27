@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,14 +30,14 @@ public class StakeholdersRecommenderService {
     private List<KeywordsBatch> keywordsBatch;
 
     public void setBatchProcess(List<Participant> participants, List<Person> persons, List<Project> project,
-                                List<Requirement> requirements, List<Responsible> responsibles) throws IOException {
+                                List<Requirement> requirements, List<Responsible> responsibles, Boolean keywords) throws IOException {
         batchProcess = new BatchProcess();
         batchProcess.setParticipants(participants);
         batchProcess.setPersons(persons);
         batchProcess.setProjects(project);
         batchProcess.setRequirements(requirements);
         batchProcess.setResponsibles(responsibles);
-        batch_process();
+        batch_process(keywords);
     }
 
     public StakeholdersRecommenderService() {
@@ -62,27 +63,31 @@ public class StakeholdersRecommenderService {
         return reqs;
     }
 
-    private void batch_process() throws IOException {
+    private void batch_process(Boolean keywords) throws IOException {
+        Long start = Calendar.getInstance().getTimeInMillis();
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/batch_process?" +
                         "withAvailability=false" +
                         "&withComponent=true" +
                         "&autoMapping=false" +
-                        "&keywords=true" +
+                        "&keywords=" + keywords +
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(batchProcess), "UTF-8"));
-        keywordsBatch = mapper.readValue(response, new TypeReference<List<KeywordsBatch>>(){});
+        Long end = Calendar.getInstance().getTimeInMillis();
+        System.out.println("Batch process took: " + (end - start) / 1000 + " seconds");
+        if (keywords)
+            keywordsBatch = mapper.readValue(response, new TypeReference<List<KeywordsBatch>>(){});
         System.out.println("Batch process completed");
     }
 
-    public List<Recommendation> recommend(Requirement first, String username) throws IOException, NotificationException {
+    public List<Recommendation> recommend(Requirement first, String username, Integer intUsername, Integer k) throws IOException, NotificationException {
 
         Recommend recommend = new Recommend();
         recommend.setProject(findProject(first));
         recommend.setRequirement(first);
-        recommend.setUser(findPerson(username));
+        recommend.setUser(findPerson(intUsername));
 
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/recommend?" +
-                        "k=10" +
+                        "k=" + k +
                         "&projectSpecific=false" +
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(recommend), "UTF-8"));
@@ -91,11 +96,11 @@ public class StakeholdersRecommenderService {
 
     }
 
-    private Person findPerson(String username) {
+    private Person findPerson(Integer intUsername) throws NotificationException {
         for (Person p : batchProcess.getPersons()) {
-            if (p.getUsername().equals(username)) return p;
+            if (p.getUsername().equals(String.valueOf(intUsername))) return p;
         }
-        return new Person(username);
+        throw new NotificationException("Person not found");
     }
 
     private Project findProject(Requirement first) throws NotificationException {
@@ -129,23 +134,25 @@ public class StakeholdersRecommenderService {
         return null;
     }
 
-    public void rejectRecommendation(Recommendation selectedRecommendation) throws IOException {
+    public void rejectRecommendation(Recommendation selectedRecommendation, Integer username) throws IOException {
         sendPostHttpRequest(stakeholdersRecommenderServiceUrl +
                 "/reject_recommendation?" +
                 "organization=" + company +
                 "&rejected=" + selectedRecommendation.getPerson().getUsername() +
                 "&requirement=" + selectedRecommendation.getRequirement().getId() +
-                "&user=" + metauser, null);
+                "&user=" + username, null);
     }
 
     public void acceptRecommendation(Recommendation selectedRecommendation) {
-        //TODO
+
     }
 
     public List<String> getRequirementKeywords(String id) {
-        for (KeywordsBatch keywordsBatchItem : keywordsBatch) {
-            for (RequirementsSkills rs : keywordsBatchItem.getRequirements()) {
-                if (rs.getRequirement().equals(id)) return rs.getSkills();
+        if (keywordsBatch != null) {
+            for (KeywordsBatch keywordsBatchItem : keywordsBatch) {
+                for (RequirementsSkills rs : keywordsBatchItem.getRequirements()) {
+                    if (rs.getRequirement().equals(id)) return rs.getSkills();
+                }
             }
         }
         return null;

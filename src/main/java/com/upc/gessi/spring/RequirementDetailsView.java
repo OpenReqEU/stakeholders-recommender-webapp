@@ -33,8 +33,8 @@ public class RequirementDetailsView extends Dialog {
         TextArea description = new TextArea("Description");
         description.setValue(requirement.getDescription());
 
-        TextField keywords = new TextField("Keywords");
-        String keywordsString = requirementKeywords == null ? "" : String.join(", ", requirementKeywords);
+        TextArea keywords = new TextArea("Keywords");
+        String keywordsString = requirementKeywords == null ? "(batch process ran without keywords)" : String.join(", ", requirementKeywords);
         keywords.setValue(keywordsString);
 
         formLayout.add(id, description, keywords);

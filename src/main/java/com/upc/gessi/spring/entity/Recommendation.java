@@ -9,7 +9,7 @@ public class Recommendation implements Serializable {
 
     private Person person;
     private Requirement requirement;
-    private Double apropiatenessScore;
+    private Double appropiatenessScore;
     private Double availabilityScore;
 
     public Recommendation() {
@@ -32,12 +32,12 @@ public class Recommendation implements Serializable {
         this.requirement = requirement;
     }
 
-    public Double getApropiatenessScore() {
-        return apropiatenessScore;
+    public Double getAppropiatenessScore() {
+        return appropiatenessScore;
     }
 
-    public void setApropiatenessScore(Double apropiatenessScore) {
-        this.apropiatenessScore = apropiatenessScore;
+    public void setAppropiatenessScore(Double apropiatenessScore) {
+        this.appropiatenessScore = apropiatenessScore;
     }
 
     public Double getAvailabilityScore() {

@@ -70,45 +70,30 @@ public class MainView extends VerticalLayout {
         grid.getColumnByKey("id").setFlexGrow(1).setResizable(true);
         grid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
         grid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
-        recommendationGrid.setColumns("person", "apropiatenessScore", "availabilityScore");
+        recommendationGrid.setColumns("person", "appropiatenessScore", "availabilityScore");
 
         filterText.setValueChangeMode(ValueChangeMode.EAGER);
         filterText.addValueChangeListener(e -> updateList());
 
         recommend.setText("Recommend stakeholders");
         recommend.addClickListener(event -> {
-            try {
-                Notification notification;
-                if (selectedRequirement != null) {
-                    notification = new Notification(
-                            "Recommend request sent to Stakeholders Recommender service", 5000,
-                            Notification.Position.TOP_CENTER);
-                    List<Recommendation> recommendations = service.recommend(selectedRequirement, usernameForm.getUsername());
-                    setRecommendation(recommendations);
-                }
-                else {
-                    notification = new Notification(
-                            "Please select a requirement", 5000,
-                            Notification.Position.TOP_CENTER);
-                }
-                notification.open();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (NotificationException ne) {
-                Notification notification = new Notification(ne.getMessage(), 5000, Notification.Position.TOP_CENTER);
-                notification.open();
+            if (selectedRequirement != null && usernameForm.getUsername() != null) {
+                RecommendDialog recommendDialog = new RecommendDialog(this);
+                recommendDialog.open();
             }
-
+            else if (selectedRequirement == null){
+                sendNotification("Please select a requirement");
+            } else if (usernameForm.getUsername() == null) {
+                sendNotification("Please set a user");
+            }
         });
 
         showRequirementDetails.setText("Show requirement keywords");
         showRequirementDetails.addClickListener(event -> {
             if (selectedRequirement == null) {
-                Notification notification = new Notification(
-                        "No requirement is selected", 5000,
-                        Notification.Position.TOP_CENTER);
-                notification.open();
+               sendNotification("No requirement is selected");
             } else {
+                service.getRequirementKeywords(selectedRequirement.getId());
                 RequirementDetailsView requirementDetailsView = new RequirementDetailsView(selectedRequirement,
                         service.getRequirementKeywords(selectedRequirement.getId()));
                 requirementDetailsView.open();
@@ -140,13 +125,15 @@ public class MainView extends VerticalLayout {
         rejectRecommendation.setText("Reject recommendation");
         rejectRecommendation.addClickListener(event -> {
             try {
-                service.rejectRecommendation(selectedRecommendation);
-                this.recommendations.remove(selectedRecommendation);
-                recommendationGrid.setItems(this.recommendations);
-                Notification notification = new Notification(
-                        "Recommendation rejected", 3000,
-                        Notification.Position.TOP_CENTER);
-                notification.open();
+                if (selectedRecommendation != null) {
+                    service.rejectRecommendation(selectedRecommendation, bugzillaService.getNumber(usernameForm.getUsername()));
+                    this.recommendations.remove(selectedRecommendation);
+                    recommendationGrid.setItems(this.recommendations);
+                    sendNotification("Recommendation rejected");
+                    selectedRecommendation = null;
+                } else {
+                    sendNotification("No recommendation selected");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -155,7 +142,12 @@ public class MainView extends VerticalLayout {
         acceptRecommendation.getClassNames().add("custom-button");
         acceptRecommendation.setText("Accept recommendation");
         acceptRecommendation.addClickListener(event -> {
-            service.acceptRecommendation(selectedRecommendation);
+            if (selectedRecommendation != null) {
+                service.acceptRecommendation(selectedRecommendation);
+                sendNotification("Recommendation accepted");
+            } else {
+                sendNotification("No recommendation selected");
+            }
         });
 
         //BUILD LAYOUT
@@ -180,9 +172,11 @@ public class MainView extends VerticalLayout {
         loadData.addClickListener(event -> {
             try {
                 if (!bugzillaForm.isFieldEmpty()) {
-                    bugzillaService.extractInfo(bugzillaForm.getComponent(), bugzillaForm.getStatus(), bugzillaForm.getProduct());
+                    //sendNotification("Loading data and sending batch process. This may take a while...");
+                    bugzillaService.extractInfo(bugzillaForm.getComponent(), bugzillaForm.getStatus(), bugzillaForm.getProduct(),
+                            bugzillaForm.getDate());
                     service.setBatchProcess(bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
-                            bugzillaService.getRequirements(), bugzillaService.getResponsibles());
+                            bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords());
                     updateList();
                 }
             } catch (IOException e) {
@@ -194,11 +188,24 @@ public class MainView extends VerticalLayout {
         subheader.setClassName("subheader");
 
         toolbar.add(usernameForm, subheader);
+        subheader.setWidthFull();
+        toolbar.setWidthFull();
 
         add(header, toolbar, mainPanel);
 
         setSizeFull();
+        if (usernameForm.getUsername() == null)
+            usernameForm.openUsernameDialog();
+        else
+            usernameForm.setUsername(usernameForm.getUsername());
 
+    }
+
+    private void sendNotification(String s) {
+        Notification notification = new Notification(
+                s, 5000,
+                Notification.Position.TOP_CENTER);
+        notification.open();
     }
 
     List<Recommendation> recommendations;
@@ -210,6 +217,21 @@ public class MainView extends VerticalLayout {
     private void setRecommendation(List<Recommendation> recommendations) {
         this.recommendations = recommendations;
         recommendationGrid.setItems(recommendations);
+    }
+
+    public void recommend(Integer k) {
+        List<Recommendation> recommendations = null;
+        try {
+            recommendations = service.recommend(selectedRequirement,
+                    usernameForm.getUsername(),
+                    bugzillaService.getNumber(usernameForm.getUsername()), k);
+            setRecommendation(recommendations);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NotificationException e) {
+            Notification notification = new Notification(e.getMessage(), 5000, Notification.Position.TOP_CENTER);
+            notification.open();
+        }
     }
 
 }

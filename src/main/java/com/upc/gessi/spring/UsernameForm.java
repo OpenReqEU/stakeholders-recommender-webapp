@@ -1,5 +1,6 @@
 package com.upc.gessi.spring;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,19 +26,26 @@ public class UsernameForm extends HorizontalLayout {
         mail.setClassName("subsubtitle");
 
         add(label, mail, editUser);
+
+        //TODO load cache
+        Object user = UI.getCurrent().getSession().getAttribute("username");
+        username = user != null ? user.toString() : null;
+
     }
 
     public void setUsername(String username) {
         this.username = username;
         label.setText("Welcome");
         mail.setText(username);
+
+        UI.getCurrent().getSession().setAttribute("username", username);
     }
 
     public String getUsername() {
         return username;
     }
 
-    private void openUsernameDialog() {
+    public void openUsernameDialog() {
         UsernameDialog usernameDialog = new UsernameDialog(this);
         usernameDialog.open();
     }

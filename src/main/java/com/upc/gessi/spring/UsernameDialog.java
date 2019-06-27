@@ -3,6 +3,7 @@ package com.upc.gessi.spring;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -20,12 +21,16 @@ public class UsernameDialog extends Dialog {
 
         this.usernameForm = usernameForm;
 
-        Label label = new Label("Edit username");
+        Label label = new Label("Set user");
         label.setClassName("subtitle");
+
+        Label sublabel = new Label("Please introduce your e-mail");
+        sublabel.setClassName("subsubtitle-no-set");
 
         textField = new TextField();
         textField.setLabel("Username (email)");
-        textField.setPlaceholder("placeholder@mail.com");
+        textField.setPlaceholder("placeholder.mail@domain.com");
+        textField.setMinWidth("18em");
 
         setUsername = new Button("Save");
         setUsername.setClassName("custom-button");
@@ -43,7 +48,7 @@ public class UsernameDialog extends Dialog {
         buttons.add(setUsername, closeButton);
 
         verticalLayout = new VerticalLayout();
-        verticalLayout.add(label, textField, buttons);
+        verticalLayout.add(label, sublabel, textField, buttons);
 
         add(verticalLayout);
 
@@ -54,8 +59,13 @@ public class UsernameDialog extends Dialog {
     }
 
     private void setUsername() {
-        usernameForm.setUsername(textField.getValue());
-        close();
+        if (!textField.getValue().isEmpty()) {
+            textField.setInvalid(false);
+            usernameForm.setUsername(textField.getValue().trim());
+            close();
+        } else  {
+            textField.setInvalid(true);
+        }
     }
 
 }

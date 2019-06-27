@@ -23,6 +23,7 @@ public class BugzillaService {
     private List<Project> project;
 
     private Map<String,List<BugzillaBug>> bugs=new HashMap<String,List<BugzillaBug>>();
+    private Map<String,Integer> emailToNumber;
 
     private static BugzillaService instance;
 
@@ -42,9 +43,10 @@ public class BugzillaService {
      * @param component
      * @param status
      * @param product
+     * @param date
      */
-    public void extractInfo(String component, String status, String product) {
-        setBugs(component, status, product);
+    public void extractInfo(String component, String status, String product, String date) {
+        setBugs(component, status, product, date);
         extractPersons();
         extractResponsibles();
         extractParticipants();
@@ -78,17 +80,17 @@ public class BugzillaService {
         participants=part;
     }
 
-    private void setBugs(String component, String status, String product) {
+    private void setBugs(String component, String status, String product, String date) {
         Integer offset=0;
         BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary,last_change_time,component" +
                 "&status=" + status +
                 "&product=" + product +
                 "&component=" + component +
-                "&creation_time=2013-01-01" +
+                "&creation_time=" + date +
                 "&limit=10000" +
                 "&offset="+offset);
         List<Requirement> reqs= new ArrayList<Requirement>();
-        Map<String,Integer> emailToNumber=new HashMap<String,Integer>();
+        emailToNumber=new HashMap<String,Integer>();
         Integer counter=0;
         // while (response.getBugs()!=null && response.getBugs().size()>0) {
         for (BugzillaBug bu:response.getBugs()) {
@@ -259,6 +261,10 @@ public class BugzillaService {
 
     public void setProject(List<Project> project) {
         this.project = project;
+    }
+
+    public Integer getNumber(String email) {
+        return emailToNumber.get(email);
     }
 }
 
