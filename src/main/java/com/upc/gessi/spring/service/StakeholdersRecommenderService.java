@@ -29,7 +29,8 @@ public class StakeholdersRecommenderService {
     private List<KeywordsBatch> keywordsBatch;
 
     public void setBatchProcess(List<Participant> participants, List<Person> persons, List<Project> project,
-                                List<Requirement> requirements, List<Responsible> responsibles, Boolean keywords) throws IOException {
+                                List<Requirement> requirements, List<Responsible> responsibles, Boolean keywords) throws IOException,
+            NotificationException {
         batchProcess = new BatchProcess();
         batchProcess.setParticipants(participants);
         batchProcess.setPersons(persons);
@@ -58,7 +59,7 @@ public class StakeholdersRecommenderService {
         return reqs;
     }
 
-    private void batch_process(Boolean keywords) throws IOException {
+    private void batch_process(Boolean keywords) throws IOException, NotificationException {
         Long start = Calendar.getInstance().getTimeInMillis();
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/batch_process?" +
                         "withAvailability=true" +
@@ -106,7 +107,7 @@ public class StakeholdersRecommenderService {
         throw new NotificationException("Requirement not found in any project");
     }
 
-    private String sendPostHttpRequest(String url, StringEntity body) throws IOException {
+    private String sendPostHttpRequest(String url, StringEntity body) throws IOException, NotificationException {
         CloseableHttpClient client = HttpClients.createDefault();
         try {
             HttpPost httpPost = new HttpPost(url);
@@ -117,7 +118,7 @@ public class StakeholdersRecommenderService {
             try(BufferedReader br = new BufferedReader(new InputStreamReader(body.getContent()))) {
                 content.append(br.lines().collect(Collectors.joining(System.lineSeparator())));
             }
-            System.out.println(content.toString());
+            //System.out.println(content.toString());
 
             CloseableHttpResponse response = client.execute(httpPost);
             System.out.println("HTTP Request " + httpPost.getMethod());
@@ -129,14 +130,13 @@ public class StakeholdersRecommenderService {
             }
             return sb.toString();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            throw new NotificationException("There was a problem reaching the SR service. Please contact an administrator");
         } finally {
             client.close();
         }
-        return null;
     }
 
-    public void rejectRecommendation(Recommendation selectedRecommendation, String username) throws IOException {
+    public void rejectRecommendation(Recommendation selectedRecommendation, String username) throws IOException, NotificationException {
         sendPostHttpRequest(stakeholdersRecommenderServiceUrl +
                 "/reject_recommendation?" +
                 "organization=" + company +
