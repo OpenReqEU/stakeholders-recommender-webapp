@@ -1,5 +1,6 @@
 package com.upc.gessi.spring.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.entity.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -55,7 +56,7 @@ public class BugzillaService {
 
     private void extractProject() {
         Project p=new Project();
-        p.setId("Set your team's name here");
+        p.setId("1");
         List<String> specifiedRequirements=new ArrayList<String>();
 
         for (Requirement r : requirements) {
@@ -73,7 +74,7 @@ public class BugzillaService {
         for (Person p:persons) {
             Participant participant=new Participant();
             participant.setPerson(p.getUsername());
-            participant.setAvailability(100);
+            //participant.setAvailability(100);
             participant.setProject("1");
             part.add(participant);
         }
@@ -186,10 +187,12 @@ public class BugzillaService {
         int i =0;
         for (Person person : persons) {
             for (BugzillaBug b: bugs.get(person.getUsername())) {
-                Responsible re= new Responsible();
-                re.setPerson(person.getUsername());
-                re.setRequirement(b.getId());
-                resp.add(re);
+                if (requirements.contains(new Requirement(b.getId()))) {
+                    Responsible re = new Responsible();
+                    re.setPerson(person.getUsername());
+                    re.setRequirement(b.getId());
+                    resp.add(re);
+                }
             }
         }
         responsibles = resp;
@@ -267,5 +270,6 @@ public class BugzillaService {
     public Integer getNumber(String email) {
         return emailToNumber.get(email);
     }
+
 }
 

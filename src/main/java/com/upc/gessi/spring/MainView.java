@@ -171,6 +171,7 @@ public class MainView extends VerticalLayout {
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (NotificationException ne) {
+                ne.printStackTrace();
                 sendNotification(ne.getMessage());
             }
         });
@@ -228,6 +229,7 @@ public class MainView extends VerticalLayout {
                 e.printStackTrace();
                 sendNotification("There was a problem reaching the SR service. Please contact an administrator");
             } catch (NotificationException ne) {
+                ne.printStackTrace();
                 sendNotification(ne.getMessage());
             }
         });

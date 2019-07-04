@@ -35,7 +35,7 @@ public class BugzillaForm extends FormLayout {
         statusField.setValue("new");
 
         datePicker.setLabel("Creation date");
-        datePicker.setValue(LocalDate.of(2018, 1, 1));
+        datePicker.setValue(LocalDate.of(2015, 1, 1));
 
         checkbox.setLabel("Extract keywords");
         checkbox.setValue(false);

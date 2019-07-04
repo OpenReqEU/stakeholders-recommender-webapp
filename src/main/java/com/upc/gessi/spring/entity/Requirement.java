@@ -18,6 +18,10 @@ public class Requirement implements Serializable {
 
     }
 
+    public Requirement(String id) {
+        this.id = id;
+    }
+
     public Requirement(String id, String description, Integer effort, String modified_at) {
         this.id = id;
         this.description = description;
@@ -63,5 +67,12 @@ public class Requirement implements Serializable {
 
     public void setRequirementParts(List<RequirementPart> requirementParts) {
         this.requirementParts = requirementParts;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        Requirement r = (Requirement) o;
+        if (r == null || r.getId() == null || this.getId() == null) return false;
+        return r.getId().equals(this.getId());
     }
 }

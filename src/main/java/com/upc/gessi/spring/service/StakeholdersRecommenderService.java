@@ -115,10 +115,13 @@ public class StakeholdersRecommenderService {
             httpPost.setEntity(body);
 
             StringBuilder content = new StringBuilder();
-            try(BufferedReader br = new BufferedReader(new InputStreamReader(body.getContent()))) {
-                content.append(br.lines().collect(Collectors.joining(System.lineSeparator())));
+            if (body != null) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(body.getContent()))) {
+                    content.append(br.lines().collect(Collectors.joining(System.lineSeparator())));
+                }
             }
-            //System.out.println(content.toString());
+            System.out.println(url);
+            System.out.println(content.toString());
 
             CloseableHttpResponse response = client.execute(httpPost);
             System.out.println("HTTP Request " + httpPost.getMethod());
@@ -130,6 +133,7 @@ public class StakeholdersRecommenderService {
             }
             return sb.toString();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new NotificationException("There was a problem reaching the SR service. Please contact an administrator");
         } finally {
             client.close();
