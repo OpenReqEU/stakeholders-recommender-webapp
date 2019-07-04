@@ -266,11 +266,17 @@ public class MainView extends VerticalLayout {
 
     private void updateList() {
         grid.setItems(service.getRequirements(filterText.getValue()));
+        if (service.getRequirements(filterText.getValue()).size() == 0) {
+            sendNotification("No requirements found");
+        }
     }
 
     private void setRecommendation(List<Recommendation> recommendations) {
         this.recommendations = recommendations;
         recommendationGrid.setItems(recommendations);
+        if (recommendations.size() == 0) {
+            sendNotification("No recommendations have been given");
+        }
     }
 
     private void recommend(Integer k) {

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class StakeholdersRecommenderService {
 
-    private static final String stakeholdersRecommenderServiceUrl = "http://217.172.12.199:9410/upc/stakeholders-recommender";
+    private static final String stakeholdersRecommenderServiceUrl = "http://localhost:9410/upc/stakeholders-recommender";
     private static final String company = "Vogella";
 
     private static StakeholdersRecommenderService instance;
@@ -112,6 +112,13 @@ public class StakeholdersRecommenderService {
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader("content-type", "application/json");
             httpPost.setEntity(body);
+
+            StringBuilder content = new StringBuilder();
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(body.getContent()))) {
+                content.append(br.lines().collect(Collectors.joining(System.lineSeparator())));
+            }
+            System.out.println(content.toString());
+
             CloseableHttpResponse response = client.execute(httpPost);
             System.out.println("HTTP Request " + httpPost.getMethod());
             System.out.println("Response code: " + response.getStatusLine());
