@@ -46,7 +46,7 @@ public class UsernameForm extends HorizontalLayout {
     }
 
     public void openUsernameDialog() {
-        UsernameDialog usernameDialog = new UsernameDialog(this);
+        UsernameDialog usernameDialog = new UsernameDialog(this, username);
         usernameDialog.open();
     }
 

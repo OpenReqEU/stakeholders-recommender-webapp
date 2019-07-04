@@ -51,3 +51,16 @@
 .filter {
     width: 300px;
 }
+
+.down {
+    margin-top: -2em;
+}
+
+.link {
+    color: #d45e14 !important;
+}
+
+.link:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}

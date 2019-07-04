@@ -83,7 +83,7 @@ public class BugzillaService {
     private void setBugs(String component, String status, String product, String date) {
         Integer offset=0;
         BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary,last_change_time,component" +
-                "&status=" + status +
+                "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
                 "&creation_time=" + date +
@@ -99,12 +99,13 @@ public class BugzillaService {
                 if (!test[1].equals("bugzilla.bugs")) {
                     List<BugzillaBug> list = new ArrayList<BugzillaBug>();
                     String assign;
-                    if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
+                    /*if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
                     else {
                         emailToNumber.put(bu.getAssigned_to(),counter);
                         assign=counter.toString();
                         counter++;
-                    }
+                    }*/
+                    assign = bu.getAssigned_to();
                     if (bugs.containsKey(assign)) {
                         List<BugzillaBug> aux = bugs.get(assign);
                         aux.add(bu);

@@ -6,14 +6,18 @@ import com.upc.gessi.spring.entity.Requirement;
 import com.upc.gessi.spring.exception.NotificationException;
 import com.upc.gessi.spring.service.BugzillaService;
 import com.upc.gessi.spring.service.StakeholdersRecommenderService;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -24,6 +28,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -31,6 +36,8 @@ import java.util.List;
 @PWA(name = "Stakeholders Recommender service web Application", shortName = "ORSR - Webapp")
 @StyleSheet("frontend://styles/styles.css") // Relative to Servlet URL
 public class MainView extends VerticalLayout {
+
+    private static final String baseLinkUrl = "https://bugs.eclipse.org/bugs/show_bug.cgi?id=";
 
     private StakeholdersRecommenderService service = StakeholdersRecommenderService.getInstance();
     private BugzillaService bugzillaService = BugzillaService.getInstance();
@@ -45,6 +52,8 @@ public class MainView extends VerticalLayout {
     private Button recommend = new Button();
     private Button rejectRecommendation = new Button();
     private Button acceptRecommendation = new Button();
+    private Button undoRejection = new Button();
+    private NumberField stepperField;
 
     private Requirement selectedRequirement;
     private Recommendation selectedRecommendation;
@@ -66,11 +75,29 @@ public class MainView extends VerticalLayout {
         filterText.setPlaceholder("Search...");
         filterText.setClearButtonVisible(true);
 
-        grid.setColumns("id", "description", "modified_at");
+        /*grid.setColumns("id", "description", "modified_at");
         grid.getColumnByKey("id").setFlexGrow(1).setResizable(true);
         grid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
+        grid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);*/
+
+        // Or you can use an ordinary function to setup the component
+        grid.addComponentColumn(item -> createRemoveButton(grid, item))
+                .setHeader("ID");
+        grid.removeColumnByKey("id");
+        grid.removeColumnByKey("description");
+        grid.removeColumnByKey("effort");
+        grid.removeColumnByKey("modified_at");
+        grid.removeColumnByKey("requirementParts");
+
+        grid.addColumns("description", "modified_at");
+        grid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
         grid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
-        recommendationGrid.setColumns("person", "appropiatenessScore", "availabilityScore");
+
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+        recommendationGrid.setColumns("person", "appropiatenessScore");
+        recommendationGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
 
         filterText.setValueChangeMode(ValueChangeMode.EAGER);
         filterText.addValueChangeListener(e -> updateList());
@@ -78,8 +105,7 @@ public class MainView extends VerticalLayout {
         recommend.setText("Recommend stakeholders");
         recommend.addClickListener(event -> {
             if (selectedRequirement != null && usernameForm.getUsername() != null) {
-                RecommendDialog recommendDialog = new RecommendDialog(this);
-                recommendDialog.open();
+                recommend(stepperField.getValue().intValue());
             }
             else if (selectedRequirement == null){
                 sendNotification("Please select a requirement");
@@ -88,7 +114,7 @@ public class MainView extends VerticalLayout {
             }
         });
 
-        showRequirementDetails.setText("Show requirement keywords");
+        showRequirementDetails.setText("Show requirement details");
         showRequirementDetails.addClickListener(event -> {
             if (selectedRequirement == null) {
                sendNotification("No requirement is selected");
@@ -113,8 +139,16 @@ public class MainView extends VerticalLayout {
             selectedRecommendation = event.getFirstSelectedItem().orElse(null);
         });
 
+
+        stepperField = new NumberField("Nº recommendations");
+        stepperField.setValue(1d);
+        stepperField.setMin(1);
+        stepperField.setHasControls(true);
+        stepperField.setMinWidth("9em");
+        stepperField.setClassName("down");
+
         HorizontalLayout buttons = new HorizontalLayout();
-        buttons.add(filterText, showRequirementDetails, recommend);
+        buttons.add(filterText, showRequirementDetails, recommend, stepperField);
         filterText.setClassName("filter");
 
         VerticalLayout leftPanel = new VerticalLayout();
@@ -126,7 +160,7 @@ public class MainView extends VerticalLayout {
         rejectRecommendation.addClickListener(event -> {
             try {
                 if (selectedRecommendation != null) {
-                    service.rejectRecommendation(selectedRecommendation, bugzillaService.getNumber(usernameForm.getUsername()));
+                    service.rejectRecommendation(selectedRecommendation, usernameForm.getUsername());
                     this.recommendations.remove(selectedRecommendation);
                     recommendationGrid.setItems(this.recommendations);
                     sendNotification("Recommendation rejected");
@@ -142,17 +176,26 @@ public class MainView extends VerticalLayout {
         acceptRecommendation.getClassNames().add("custom-button");
         acceptRecommendation.setText("Accept recommendation");
         acceptRecommendation.addClickListener(event -> {
-            if (selectedRecommendation != null) {
+            //TODO uncomment when done
+            /*if (selectedRecommendation != null) {
                 service.acceptRecommendation(selectedRecommendation);
                 sendNotification("Recommendation accepted");
             } else {
                 sendNotification("No recommendation selected");
-            }
+            }*/
+            sendNotification("Method not implemented");
+        });
+
+        undoRejection.getClassNames().add("custom-button");
+        undoRejection.setText("Undo rejection");
+        undoRejection.addClickListener(event -> {
+            //TODO
+            sendNotification("Method not implemented");
         });
 
         //BUILD LAYOUT
         HorizontalLayout recommendationButtons = new HorizontalLayout();
-        recommendationButtons.add(acceptRecommendation, rejectRecommendation);
+        recommendationButtons.add(acceptRecommendation, rejectRecommendation, undoRejection);
 
         VerticalLayout rightPanel = new VerticalLayout();
         rightPanel.add(recommendationButtons);
@@ -201,6 +244,17 @@ public class MainView extends VerticalLayout {
 
     }
 
+    private Component createRemoveButton(Grid<Requirement> grid, Requirement item) {
+        Label label = new Label();
+        label.getElement().setProperty("innerHTML", "<a href=\""
+                + baseLinkUrl
+                + item.getId()
+                + "\" target=\"_blank\" class=\"link\" style=\"target-new: tab ! important;\">"
+                + item.getId() + "</a>");
+        label.setClassName("link");
+        return label;
+    }
+
     private void sendNotification(String s) {
         Notification notification = new Notification(
                 s, 5000,
@@ -219,12 +273,11 @@ public class MainView extends VerticalLayout {
         recommendationGrid.setItems(recommendations);
     }
 
-    public void recommend(Integer k) {
+    private void recommend(Integer k) {
         List<Recommendation> recommendations = null;
         try {
             recommendations = service.recommend(selectedRequirement,
-                    usernameForm.getUsername(),
-                    bugzillaService.getNumber(usernameForm.getUsername()), k);
+                    usernameForm.getUsername(), k);
             setRecommendation(recommendations);
         } catch (IOException e) {
             e.printStackTrace();

@@ -20,7 +20,7 @@ public class BugzillaForm extends FormLayout {
 
         productField = new TextField();
         componentField = new TextField();
-        statusField = new Select<>("open", "closed");
+        statusField = new Select<>("new", "resolved", "verified", "closed");
         datePicker = new DatePicker();
         checkbox = new Checkbox();
 
@@ -32,7 +32,7 @@ public class BugzillaForm extends FormLayout {
 
         statusField.setPlaceholder("status");
         statusField.setLabel("Status");
-        statusField.setValue("closed");
+        statusField.setValue("new");
 
         datePicker.setLabel("Creation date");
         datePicker.setValue(LocalDate.of(2018, 1, 1));

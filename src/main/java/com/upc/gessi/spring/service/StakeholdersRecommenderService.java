@@ -20,7 +20,6 @@ public class StakeholdersRecommenderService {
 
     private static final String stakeholdersRecommenderServiceUrl = "http://217.172.12.199:9410/upc/stakeholders-recommender";
     private static final String company = "Vogella";
-    private static final String metauser = "web-client-SR-service";
 
     private static StakeholdersRecommenderService instance;
 
@@ -51,10 +50,6 @@ public class StakeholdersRecommenderService {
         return instance;
     }
 
-    public List<Requirement> getRequirements() {
-        return batchProcess.getRequirements();
-    }
-
     public List<Requirement> getRequirements(String value) {
         List<Requirement> reqs = new ArrayList<>();
         for (Requirement req : batchProcess.getRequirements()) {
@@ -66,9 +61,9 @@ public class StakeholdersRecommenderService {
     private void batch_process(Boolean keywords) throws IOException {
         Long start = Calendar.getInstance().getTimeInMillis();
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/batch_process?" +
-                        "withAvailability=false" +
+                        "withAvailability=true" +
                         "&withComponent=true" +
-                        "&autoMapping=false" +
+                        "&autoMapping=true" +
                         "&keywords=" + keywords +
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(batchProcess), "UTF-8"));
@@ -79,16 +74,16 @@ public class StakeholdersRecommenderService {
         System.out.println("Batch process completed");
     }
 
-    public List<Recommendation> recommend(Requirement first, String username, Integer intUsername, Integer k) throws IOException, NotificationException {
+    public List<Recommendation> recommend(Requirement first, String username, Integer k) throws IOException, NotificationException {
 
         Recommend recommend = new Recommend();
         recommend.setProject(findProject(first));
         recommend.setRequirement(first);
-        recommend.setUser(findPerson(intUsername));
+        recommend.setUser(findPerson(username));
 
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/recommend?" +
                         "k=" + k +
-                        "&projectSpecific=false" +
+                        "&projectSpecific=true" +
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(recommend), "UTF-8"));
 
@@ -96,9 +91,9 @@ public class StakeholdersRecommenderService {
 
     }
 
-    private Person findPerson(Integer intUsername) throws NotificationException {
+    private Person findPerson(String username) throws NotificationException {
         for (Person p : batchProcess.getPersons()) {
-            if (p.getUsername().equals(String.valueOf(intUsername))) return p;
+            if (p.getUsername().equals(username)) return p;
         }
         throw new NotificationException("Person not found");
     }
@@ -134,7 +129,7 @@ public class StakeholdersRecommenderService {
         return null;
     }
 
-    public void rejectRecommendation(Recommendation selectedRecommendation, Integer username) throws IOException {
+    public void rejectRecommendation(Recommendation selectedRecommendation, String username) throws IOException {
         sendPostHttpRequest(stakeholdersRecommenderServiceUrl +
                 "/reject_recommendation?" +
                 "organization=" + company +

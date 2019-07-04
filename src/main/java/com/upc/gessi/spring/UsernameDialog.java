@@ -17,7 +17,7 @@ public class UsernameDialog extends Dialog {
     private Button closeButton;
     private Button setUsername;
 
-    public UsernameDialog(UsernameForm usernameForm) {
+    public UsernameDialog(UsernameForm usernameForm, String username) {
 
         this.usernameForm = usernameForm;
 
@@ -43,6 +43,9 @@ public class UsernameDialog extends Dialog {
         closeButton.addClickListener(event -> {
             closeDialog();
         });
+
+        if (username != null)
+            textField.setValue(username);
 
         HorizontalLayout buttons = new HorizontalLayout();
         buttons.add(setUsername, closeButton);
