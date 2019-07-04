@@ -224,6 +224,7 @@ public class MainView extends VerticalLayout {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                sendNotification("There was a problem reaching the SR service. Please contact an administrator");
             }
         });
 
