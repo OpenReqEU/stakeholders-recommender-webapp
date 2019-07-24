@@ -41,13 +41,13 @@ public class BugzillaService {
 
     /**
      * Get bugzilla info
-     * @param component
-     * @param status
-     * @param product
+     * @param components
+     * @param statuses
+     * @param products
      * @param date
      */
-    public void extractInfo(String component, String status, String product, String date) {
-        setBugs(component, status, product, date);
+    public void extractInfo(String[] components, String[] statuses, String[] products, String date) {
+        setBugs(components, statuses, products, date);
         extractPersons();
         extractResponsibles();
         extractParticipants();
@@ -81,15 +81,26 @@ public class BugzillaService {
         participants=part;
     }
 
-    private void setBugs(String component, String status, String product, String date) {
-        Integer offset=0;
+    private void setBugs(String[] components, String[] statuses, String[] products, String date) {
+        requirements = new ArrayList<>();
+        for (String component : components) {
+            for (String product : products) {
+                for (String status : statuses) {
+                    List<Requirement> reqs = getRequirements(date, status, product, component);
+                    requirements.addAll(reqs);
+                }
+            }
+        }
+    }
+
+    private List<Requirement> getRequirements(String date, String status, String product, String component) {
         BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary,last_change_time,component" +
                 "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
                 "&creation_time=" + date +
-                "&limit=10000" +
-                "&offset="+offset);
+                "&limit=100000" +
+                "&offset=0");
         List<Requirement> reqs= new ArrayList<Requirement>();
         emailToNumber=new HashMap<String,Integer>();
         Integer counter=0;
@@ -126,50 +137,8 @@ public class BugzillaService {
                 }
             }
         }
-
-
-        /*response=calltoServiceBugs("?include_fields=id,assigned_to,summary,last_change_time" +
-                "&status=closed" +
-                "&product=Platform" +
-                "&component=SWT" +
-                "&creation_time=2013-01-01" +
-                "&limit=10000" +
-                "&offset="+offset);
-        for (BugzillaBug bu:response.getBugs()) {
-            if (bu.getAssigned_to() != "nobody@mozilla.org") {
-                String[] test = bu.getAssigned_to().split("@");
-                if (!test[1].equals("bugzilla.bugs")) {
-                    List<BugzillaBug> list = new ArrayList<BugzillaBug>();
-                    String assign;
-                    if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
-                    else {
-                        emailToNumber.put(bu.getAssigned_to(),counter);
-                        assign=counter.toString();
-                        counter++;
-                    }
-                    if (bugs.containsKey(assign)) {
-                        List<BugzillaBug> aux = bugs.get(assign);
-                        aux.add(bu);
-                        bugs.put(assign, aux);
-                    } else {
-                        list.add(bu);
-                        bugs.put(assign, list);
-                    }
-                    Requirement requirement = new Requirement();
-                    requirement.setId(bu.getId());
-                    requirement.setDescription(bu.getSummary());
-                    requirement.setEffort(1);
-                    requirement.setModified_at(bu.getLast_change_time());
-                    requirement.setRequirementParts(Arrays.asList(new RequirementPart("1", bu.getComponent())));
-
-                    reqs.add(requirement);
-                }
-            }
-        }
-        //}*/
         System.out.println(reqs.size());
-        requirements=reqs;
-
+        return reqs;
     }
 
     public void extractPersons() {

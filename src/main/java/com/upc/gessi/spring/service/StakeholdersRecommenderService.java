@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.entity.*;
 import com.upc.gessi.spring.exception.NotificationException;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class StakeholdersRecommenderService {
 
     private static final String stakeholdersRecommenderServiceUrl = "http://localhost:9410/upc/stakeholders-recommender";
+    //private static final String stakeholdersRecommenderServiceUrl = "http://217.172.12.199:9410/upc/stakeholders-recommender";
     private static final String company = "Vogella";
 
     private static StakeholdersRecommenderService instance;
@@ -162,5 +164,38 @@ public class StakeholdersRecommenderService {
             }
         }
         return null;
+    }
+
+    public List<Skill> getPersonSkills(String username) throws NotificationException, IOException {
+        String response = sendGetHttpRequest(stakeholdersRecommenderServiceUrl +
+                "/getPersonSkills?" +
+                "organization=" + company +
+                "&person=" + username);
+        return mapper.readValue(response, new TypeReference<List<Skill>>(){});
+    }
+
+    private String sendGetHttpRequest(String url) throws NotificationException, IOException {
+        CloseableHttpClient client = HttpClients.createDefault();
+        try {
+            HttpGet httpGet = new HttpGet(url);
+            httpGet.addHeader("content-type", "application/json");
+
+            System.out.println(url);
+
+            CloseableHttpResponse response = client.execute(httpGet);
+            System.out.println("HTTP Request " + httpGet.getMethod());
+            System.out.println("Response code: " + response.getStatusLine());
+            //TODO throw exception if 400
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+                sb.append(br.lines().collect(Collectors.joining(System.lineSeparator())));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new NotificationException("There was a problem reaching the SR service. Please contact an administrator");
+        } finally {
+            client.close();
+        }
     }
 }

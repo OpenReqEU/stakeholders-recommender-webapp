@@ -60,6 +60,18 @@
     color: #d45e14 !important;
 }
 
+.link-person {
+    color: #d45e14 !important;
+    border: none;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.link-person:hover {
+    cursor: pointer;
+}
+
 .link:hover {
     text-decoration: underline;
     cursor: pointer;
