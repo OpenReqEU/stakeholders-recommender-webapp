@@ -16,6 +16,8 @@ public class BugzillaService {
 
     private static final String bugzillaUrl = "https://bugs.eclipse.org/bugs";
 
+    private String token;
+
     private RestTemplate restTemplate = new RestTemplate();
     private List<Responsible> responsibles;
     private List<Requirement> requirements;
@@ -240,5 +242,21 @@ public class BugzillaService {
         return emailToNumber.get(email);
     }
 
+    public Boolean login(String user, String password) {
+        try {
+            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password;
+            ResponseEntity<BugzillaToken> response = restTemplate.exchange(
+                    callUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<BugzillaToken>() {
+                    });
+            this.token = response.getBody().getToken();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 

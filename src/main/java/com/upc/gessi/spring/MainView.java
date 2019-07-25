@@ -31,6 +31,7 @@ import com.vaadin.flow.server.PWA;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 @Route
@@ -58,6 +59,8 @@ public class MainView extends VerticalLayout {
 
     private Requirement selectedRequirement;
     private Recommendation selectedRecommendation;
+
+    private Recommendation lastRejection;
 
     public MainView(@Autowired MessageBean bean) {
 
@@ -168,9 +171,13 @@ public class MainView extends VerticalLayout {
         rejectRecommendation.addClickListener(event -> {
             try {
                 if (selectedRecommendation != null) {
+                    lastRejection = selectedRecommendation;
+
                     service.rejectRecommendation(selectedRecommendation, usernameForm.getUsername());
+
                     this.recommendations.remove(selectedRecommendation);
                     recommendationGrid.setItems(this.recommendations);
+
                     sendNotification("Recommendation rejected");
                     selectedRecommendation = null;
                 } else {
@@ -198,10 +205,24 @@ public class MainView extends VerticalLayout {
         });
 
         undoRejection.getClassNames().add("custom-button");
-        undoRejection.setText("Undo rejection");
+        undoRejection.setText("Undo last rejection");
         undoRejection.addClickListener(event -> {
-            //TODO
-            sendNotification("Method not implemented");
+            if (lastRejection != null) {
+                try {
+                    service.undoRejection(usernameForm.getUsername(), lastRejection);
+                    this.recommendations.add(lastRejection);
+                    this.recommendations.sort(Comparator.comparingDouble(Recommendation::getAppropiatenessScore)
+                            .reversed());
+                    recommendationGrid.setItems(this.recommendations);
+                    lastRejection = null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NotificationException e) {
+                    sendNotification(e.getMessage());
+                    e.printStackTrace();
+                }
+            } else
+                sendNotification("No recommendation has been rejected yet");
         });
 
         //BUILD LAYOUT

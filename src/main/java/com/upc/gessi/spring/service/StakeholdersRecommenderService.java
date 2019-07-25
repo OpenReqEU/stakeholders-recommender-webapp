@@ -198,4 +198,13 @@ public class StakeholdersRecommenderService {
             client.close();
         }
     }
+
+    public void undoRejection(String username, Recommendation lastRejection) throws IOException, NotificationException {
+        sendPostHttpRequest(stakeholdersRecommenderServiceUrl +
+                "/reject_recommendation?" +
+                "organization=" + company +
+                "&rejected=" + lastRejection.getPerson().getUsername() +
+                "&requirement=" + lastRejection.getRequirement().getId() +
+                "&user=" + username, null);
+    }
 }

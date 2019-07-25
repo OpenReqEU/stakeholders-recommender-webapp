@@ -1,11 +1,12 @@
 package com.upc.gessi.spring;
 
+import com.upc.gessi.spring.service.BugzillaService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 
 public class UsernameDialog extends Dialog {
@@ -14,6 +15,7 @@ public class UsernameDialog extends Dialog {
 
     private VerticalLayout verticalLayout ;
     private TextField textField;
+    private PasswordField passwordField;
     private Button closeButton;
     private Button setUsername;
 
@@ -21,7 +23,7 @@ public class UsernameDialog extends Dialog {
 
         this.usernameForm = usernameForm;
 
-        Label label = new Label("Set user");
+        Label label = new Label("Log in form");
         label.setClassName("subtitle");
 
         Label sublabel = new Label("Please introduce your e-mail");
@@ -29,13 +31,17 @@ public class UsernameDialog extends Dialog {
 
         textField = new TextField();
         textField.setLabel("Username (email)");
-        textField.setPlaceholder("placeholder.mail@domain.com");
+        textField.setPlaceholder("Platform-UI-Inbox@eclipse.org");
         textField.setMinWidth("18em");
 
-        setUsername = new Button("Save");
+        passwordField = new PasswordField();
+        passwordField.setLabel("Password");
+        passwordField.setMinWidth("18em");
+
+        setUsername = new Button("Log in");
         setUsername.setClassName("custom-button");
         setUsername.addClickListener(event -> {
-            setUsername();
+            login();
         });
 
         closeButton = new Button("Close");
@@ -51,7 +57,7 @@ public class UsernameDialog extends Dialog {
         buttons.add(setUsername, closeButton);
 
         verticalLayout = new VerticalLayout();
-        verticalLayout.add(label, sublabel, textField, buttons);
+        verticalLayout.add(label, sublabel, textField, passwordField, buttons);
 
         add(verticalLayout);
 
@@ -61,13 +67,15 @@ public class UsernameDialog extends Dialog {
         close();
     }
 
-    private void setUsername() {
-        if (!textField.getValue().isEmpty()) {
-            textField.setInvalid(false);
+    private void login() {
+        Boolean b = BugzillaService.getInstance().login(textField.getValue(), passwordField.getValue());
+        if (b) {
             usernameForm.setUsername(textField.getValue().trim());
             close();
-        } else  {
-            textField.setInvalid(true);
+        } else {
+            //TODO
+            usernameForm.setUsername(textField.getValue().trim());
+            close();
         }
     }
 
