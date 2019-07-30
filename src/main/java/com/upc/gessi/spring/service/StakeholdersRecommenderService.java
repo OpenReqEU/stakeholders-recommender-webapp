@@ -151,10 +151,6 @@ public class StakeholdersRecommenderService {
                 "&user=" + username, null);
     }
 
-    public void acceptRecommendation(Recommendation selectedRecommendation) {
-
-    }
-
     public List<String> getRequirementKeywords(String id) {
         if (keywordsBatch != null) {
             for (KeywordsBatch keywordsBatchItem : keywordsBatch) {
@@ -207,4 +203,5 @@ public class StakeholdersRecommenderService {
                 "&requirement=" + lastRejection.getRequirement().getId() +
                 "&user=" + username, null);
     }
+
 }

@@ -196,7 +196,7 @@ public class MainView extends VerticalLayout {
         acceptRecommendation.addClickListener(event -> {
             //TODO uncomment when done
             /*if (selectedRecommendation != null) {
-                service.acceptRecommendation(selectedRecommendation);
+                bugzillaService.assignUser(selectedRecommendation);
                 sendNotification("Recommendation accepted");
             } else {
                 sendNotification("No recommendation selected");
@@ -210,10 +210,12 @@ public class MainView extends VerticalLayout {
             if (lastRejection != null) {
                 try {
                     service.undoRejection(usernameForm.getUsername(), lastRejection);
-                    this.recommendations.add(lastRejection);
-                    this.recommendations.sort(Comparator.comparingDouble(Recommendation::getAppropiatenessScore)
-                            .reversed());
-                    recommendationGrid.setItems(this.recommendations);
+                    if (selectedRequirement.getId().equals(lastRejection.getRequirement().getId())) {
+                        this.recommendations.add(lastRejection);
+                        this.recommendations.sort(Comparator.comparingDouble(Recommendation::getAppropiatenessScore)
+                                .reversed());
+                        recommendationGrid.setItems(this.recommendations);
+                    }
                     lastRejection = null;
                 } catch (IOException e) {
                     e.printStackTrace();

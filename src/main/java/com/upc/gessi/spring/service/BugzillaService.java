@@ -3,6 +3,7 @@ package com.upc.gessi.spring.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.entity.*;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -252,6 +253,24 @@ public class BugzillaService {
                     new ParameterizedTypeReference<BugzillaToken>() {
                     });
             this.token = response.getBody().getToken();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Boolean assignUser(Recommendation selectedRecommendation) {
+        try {
+            String callUrl = bugzillaUrl + "/rest/bug/" + selectedRecommendation.getRequirement().getId();
+            UpdateBug updateBug = new UpdateBug();
+            updateBug.setAssigned_to(selectedRecommendation.getPerson().getUsername());
+            ResponseEntity response = restTemplate.exchange(
+                    callUrl,
+                    HttpMethod.PUT,
+                    new HttpEntity<>(updateBug),
+                    new ParameterizedTypeReference<BugzillaToken>() {
+                    });
             return true;
         } catch (Exception e) {
             e.printStackTrace();
