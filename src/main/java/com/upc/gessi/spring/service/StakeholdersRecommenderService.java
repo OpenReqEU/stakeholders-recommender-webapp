@@ -31,7 +31,8 @@ public class StakeholdersRecommenderService {
     private List<KeywordsBatch> keywordsBatch;
 
     public void setBatchProcess(List<Participant> participants, List<Person> persons, List<Project> project,
-                                List<Requirement> requirements, List<Responsible> responsibles, Boolean keywords) throws IOException,
+                                List<Requirement> requirements, List<Responsible> responsibles, Boolean keywords,
+                                Boolean keywordTool) throws IOException,
             NotificationException {
         batchProcess = new BatchProcess();
         batchProcess.setParticipants(participants);
@@ -39,7 +40,7 @@ public class StakeholdersRecommenderService {
         batchProcess.setProjects(project);
         batchProcess.setRequirements(requirements);
         batchProcess.setResponsibles(responsibles);
-        batch_process(keywords);
+        batch_process(keywords, keywordTool);
     }
 
     public StakeholdersRecommenderService() {
@@ -61,13 +62,14 @@ public class StakeholdersRecommenderService {
         return reqs;
     }
 
-    private void batch_process(Boolean keywords) throws IOException, NotificationException {
+    private void batch_process(Boolean keywords, Boolean keywordTool) throws IOException, NotificationException {
         Long start = Calendar.getInstance().getTimeInMillis();
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/batch_process?" +
                         "withAvailability=true" +
                         "&withComponent=true" +
                         "&autoMapping=true" +
                         "&keywords=" + keywords +
+                        "&keywordPreprocessing=" + keywordTool +
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(batchProcess), "UTF-8"));
         Long end = Calendar.getInstance().getTimeInMillis();

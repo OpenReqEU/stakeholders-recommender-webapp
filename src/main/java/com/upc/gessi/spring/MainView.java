@@ -253,7 +253,8 @@ public class MainView extends VerticalLayout {
                     bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
                             bugzillaForm.getDate());
                     service.setBatchProcess(bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
-                            bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords());
+                            bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords(),
+                            bugzillaForm.getKeywordTool());
                     updateList();
                 }
             } catch (IOException e) {

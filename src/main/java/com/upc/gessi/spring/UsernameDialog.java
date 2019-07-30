@@ -26,9 +26,6 @@ public class UsernameDialog extends Dialog {
         Label label = new Label("Log in form");
         label.setClassName("subtitle");
 
-        Label sublabel = new Label("Please introduce your e-mail");
-        sublabel.setClassName("subsubtitle-no-set");
-
         textField = new TextField();
         textField.setLabel("Username (email)");
         textField.setPlaceholder("Platform-UI-Inbox@eclipse.org");
@@ -57,7 +54,7 @@ public class UsernameDialog extends Dialog {
         buttons.add(setUsername, closeButton);
 
         verticalLayout = new VerticalLayout();
-        verticalLayout.add(label, sublabel, textField, passwordField, buttons);
+        verticalLayout.add(label, textField, passwordField, buttons);
 
         add(verticalLayout);
 

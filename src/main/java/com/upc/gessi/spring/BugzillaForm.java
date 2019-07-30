@@ -1,9 +1,10 @@
 package com.upc.gessi.spring;
 
+import com.upc.gessi.spring.entity.KeywordEnum;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import org.vaadin.gatanaso.MultiselectComboBox;
 
@@ -18,7 +19,10 @@ public class BugzillaForm extends FormLayout {
     private TextField componentField;
     private MultiselectComboBox<String> statusField;
     private DatePicker datePicker;
+    private ComboBox<KeywordEnum> keywordTool;
     private Checkbox checkbox;
+
+    private Boolean bugzillaKeywordTool;
 
     public BugzillaForm() {
 
@@ -26,6 +30,7 @@ public class BugzillaForm extends FormLayout {
         componentField = new TextField();
         statusField = new MultiselectComboBox();
         datePicker = new DatePicker();
+        keywordTool = new ComboBox<>();
         checkbox = new Checkbox();
 
         productField.setLabel("Product");
@@ -43,17 +48,31 @@ public class BugzillaForm extends FormLayout {
         datePicker.setLabel("Creation date");
         datePicker.setValue(LocalDate.of(2015, 1, 1));
 
+        keywordTool.setLabel("Keyword tool");
+        keywordTool.setItems(KeywordEnum.ORSR, KeywordEnum.BUGZILLA);
+        keywordTool.setAllowCustomValue(false);
+        keywordTool.setValue(KeywordEnum.ORSR);
+        bugzillaKeywordTool = false;
+        keywordTool.addValueChangeListener(event -> {
+            if (event.getValue().equals(KeywordEnum.BUGZILLA))
+                bugzillaKeywordTool = true;
+            else
+                bugzillaKeywordTool = false;
+        });
+
         checkbox.setLabel("Extract keywords");
         checkbox.setValue(false);
 
-        add(productField, componentField, statusField, datePicker, checkbox);
+        add(productField, componentField, statusField, datePicker, keywordTool,  checkbox);
 
         setResponsiveSteps(
                 new ResponsiveStep("0", 1),
-                new ResponsiveStep("21em", 2),
-                new ResponsiveStep("21em", 3),
-                new ResponsiveStep("15em", 4),
-                new ResponsiveStep("15em", 5));
+                new ResponsiveStep("18em", 2),
+                new ResponsiveStep("18em", 3),
+                new ResponsiveStep("18em", 4),
+                new ResponsiveStep("18em", 5),
+                new ResponsiveStep("18em", 6)
+                );
     }
 
     public String[] getProducts() {
@@ -79,6 +98,10 @@ public class BugzillaForm extends FormLayout {
 
     public String getDate() {
         return datePicker.getValue().getYear() + "-" + datePicker.getValue().getMonthValue() + "-" + datePicker.getValue().getDayOfMonth();
+    }
+
+    public Boolean getKeywordTool() {
+        return bugzillaKeywordTool;
     }
 
     public boolean isFieldEmpty() {

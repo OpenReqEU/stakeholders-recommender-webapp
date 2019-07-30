@@ -18,7 +18,7 @@ public class UsernameForm extends HorizontalLayout {
         label = new Label("No user selected, please set username");
         label.setClassName("subsubtitle-no-set");
 
-        editUser = new Button("Edit user");
+        editUser = new Button("Log in");
         editUser.setClassName("custom-button");
         editUser.addClickListener(event -> {
             openUsernameDialog();
