@@ -49,18 +49,18 @@ public class BugzillaForm extends FormLayout {
         datePicker.setValue(LocalDate.of(2015, 1, 1));
 
         keywordTool.setLabel("Keyword tool");
-        keywordTool.setItems(KeywordEnum.ORSR, KeywordEnum.BUGZILLA);
+        keywordTool.setItems(KeywordEnum.UPC, KeywordEnum.TUGraz);
         keywordTool.setAllowCustomValue(false);
-        keywordTool.setValue(KeywordEnum.ORSR);
+        keywordTool.setValue(KeywordEnum.UPC);
         bugzillaKeywordTool = false;
         keywordTool.addValueChangeListener(event -> {
-            if (event.getValue().equals(KeywordEnum.BUGZILLA))
+            if (event.getValue().equals(KeywordEnum.TUGraz))
                 bugzillaKeywordTool = true;
             else
                 bugzillaKeywordTool = false;
         });
 
-        checkbox.setLabel("Extract keywords");
+        checkbox.setLabel("Show keywords");
         checkbox.setValue(false);
 
         add(productField, componentField, statusField, datePicker, keywordTool,  checkbox);

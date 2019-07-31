@@ -152,7 +152,7 @@ public class MainView extends VerticalLayout {
 
 
         stepperField = new NumberField("Nº recommendations");
-        stepperField.setValue(1d);
+        stepperField.setValue(5d);
         stepperField.setMin(1);
         stepperField.setHasControls(true);
         stepperField.setMinWidth("9em");
