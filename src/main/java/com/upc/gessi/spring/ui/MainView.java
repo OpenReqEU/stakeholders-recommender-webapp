@@ -37,7 +37,7 @@ public class MainView extends VerticalLayout {
     private StakeholdersRecommenderService service = StakeholdersRecommenderService.getInstance();
     private BugzillaService bugzillaService = BugzillaService.getInstance();
 
-    private Grid<Requirement> grid = new Grid<>(Requirement.class);
+    private Grid<Requirement> requirementsGrid = new Grid<>(Requirement.class);
     private Grid<Recommendation> recommendationGrid = new Grid<>(Recommendation.class);
     private BugzillaForm bugzillaForm = new BugzillaForm();
     private TextField filterText = new TextField();
@@ -72,25 +72,26 @@ public class MainView extends VerticalLayout {
         filterText.setPlaceholder("Search...");
         filterText.setClearButtonVisible(true);
 
-        /*grid.setColumns("id", "description", "modified_at");
-        grid.getColumnByKey("id").setFlexGrow(1).setResizable(true);
-        grid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
-        grid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);*/
+        /*requirementsGrid.setColumns("id", "description", "modified_at");
+        requirementsGrid.getColumnByKey("id").setFlexGrow(1).setResizable(true);
+        requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
+        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);*/
 
         // Or you can use an ordinary function to setup the component
-        grid.addComponentColumn(item -> createRemoveButton(grid, item))
+        requirementsGrid.addComponentColumn(item -> createRemoveButton(requirementsGrid, item))
                 .setHeader("ID");
-        grid.removeColumnByKey("id");
-        grid.removeColumnByKey("description");
-        grid.removeColumnByKey("effort");
-        grid.removeColumnByKey("modified_at");
-        grid.removeColumnByKey("requirementParts");
+        requirementsGrid.removeColumnByKey("id");
+        requirementsGrid.removeColumnByKey("description");
+        requirementsGrid.removeColumnByKey("effort");
+        requirementsGrid.removeColumnByKey("modified_at");
+        requirementsGrid.removeColumnByKey("requirementParts");
+        requirementsGrid.removeColumnByKey("cc_count");
 
-        grid.addColumns("description", "modified_at");
-        grid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
-        grid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
+        requirementsGrid.addColumns("description", "cc_count", "modified_at");
+        requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
+        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
 
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+        requirementsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
         recommendationGrid.addComponentColumn(item -> createPersonButton(recommendationGrid, item))
                 .setHeader("Person");
@@ -133,8 +134,8 @@ public class MainView extends VerticalLayout {
         showRequirementDetails.getClassNames().add("custom-button");
         recommend.getClassNames().add("custom-button");
 
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.addSelectionListener(event -> {
+        requirementsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        requirementsGrid.addSelectionListener(event -> {
             selectedRequirement = event.getFirstSelectedItem().orElse(null);
         });
 
@@ -157,7 +158,7 @@ public class MainView extends VerticalLayout {
 
         VerticalLayout leftPanel = new VerticalLayout();
         leftPanel.add(buttons);
-        leftPanel.add(grid);
+        leftPanel.add(requirementsGrid);
 
         rejectRecommendation.getClassNames().add("custom-button");
         rejectRecommendation.setText("Reject recommendation");
@@ -320,7 +321,7 @@ public class MainView extends VerticalLayout {
     List<Recommendation> recommendations;
 
     private void updateList() {
-        grid.setItems(service.getRequirements(filterText.getValue()));
+        requirementsGrid.setItems(service.getRequirements(filterText.getValue()));
         if (service.getRequirements(filterText.getValue()).size() == 0) {
             sendNotification("No requirements found");
         }

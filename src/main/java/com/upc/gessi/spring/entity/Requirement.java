@@ -12,6 +12,7 @@ public class Requirement implements Serializable {
     private String description;
     private Integer effort;
     private String modified_at;
+    private Integer cc_count;
     private List<RequirementPart> requirementParts;
 
     public Requirement() {
@@ -67,6 +68,14 @@ public class Requirement implements Serializable {
 
     public void setRequirementParts(List<RequirementPart> requirementParts) {
         this.requirementParts = requirementParts;
+    }
+
+    public Integer getCc_count() {
+        return cc_count;
+    }
+
+    public void setCc_count(Integer cc_count) {
+        this.cc_count = cc_count;
     }
 
     @Override

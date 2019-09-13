@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 public class StakeholdersRecommenderService {
 
-    private static final String stakeholdersRecommenderServiceUrl = "http://localhost:9410/upc/stakeholders-recommender";
-    //private static final String stakeholdersRecommenderServiceUrl = "http://217.172.12.199:9410/upc/stakeholders-recommender";
+    //private static final String stakeholdersRecommenderServiceUrl = "http://localhost:9410/upc/stakeholders-recommender";
+    private static final String stakeholdersRecommenderServiceUrl = "http://217.172.12.199:9410/upc/stakeholders-recommender";
     private static final String company = "Vogella";
 
     private static StakeholdersRecommenderService instance;

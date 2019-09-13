@@ -14,6 +14,7 @@ public class BugzillaBug implements Serializable {
     String summary;
     String last_change_time;
     String component;
+    List<String> cc;
 
     public String getAssigned_to() {
         return assigned_to;
@@ -61,5 +62,13 @@ public class BugzillaBug implements Serializable {
 
     public void setComponent(String component) {
         this.component = component;
+    }
+
+    public List<String> getCc() {
+        return cc;
+    }
+
+    public void setCc(List<String> cc) {
+        this.cc = cc;
     }
 }

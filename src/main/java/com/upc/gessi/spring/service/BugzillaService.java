@@ -97,7 +97,7 @@ public class BugzillaService {
     }
 
     private List<Requirement> getRequirements(String date, String status, String product, String component) {
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,assigned_to,summary,last_change_time,component" +
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,cc,assigned_to,summary,last_change_time,component" +
                 "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
@@ -133,6 +133,7 @@ public class BugzillaService {
                     requirement.setId(bu.getId());
                     requirement.setDescription(bu.getSummary());
                     requirement.setModified_at(bu.getLast_change_time());
+                    requirement.setCc_count(bu.getCc().size());
                     requirement.setEffort(1);
                     requirement.setRequirementParts(Arrays.asList(new RequirementPart("1", bu.getComponent())));
 
