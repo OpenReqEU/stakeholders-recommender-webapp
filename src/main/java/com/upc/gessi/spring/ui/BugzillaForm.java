@@ -1,4 +1,4 @@
-package com.upc.gessi.spring;
+package com.upc.gessi.spring.ui;
 
 import com.upc.gessi.spring.entity.KeywordEnum;
 import com.vaadin.flow.component.checkbox.Checkbox;

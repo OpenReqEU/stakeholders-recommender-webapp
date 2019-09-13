@@ -1,4 +1,4 @@
-package com.upc.gessi.spring;
+package com.upc.gessi.spring.ui;
 
 import com.upc.gessi.spring.service.BugzillaService;
 import com.vaadin.flow.component.button.Button;

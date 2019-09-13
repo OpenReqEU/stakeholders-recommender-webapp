@@ -1,4 +1,4 @@
-package com.upc.gessi.spring;
+package com.upc.gessi.spring.ui;
 
 import com.upc.gessi.spring.entity.Person;
 import com.upc.gessi.spring.entity.Requirement;

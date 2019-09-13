@@ -1,4 +1,4 @@
-package com.upc.gessi.spring;
+package com.upc.gessi.spring.ui;
 
 import java.time.LocalTime;
 import org.springframework.stereotype.Service;

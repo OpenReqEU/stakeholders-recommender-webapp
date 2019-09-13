@@ -1,27 +1,21 @@
-package com.upc.gessi.spring;
+package com.upc.gessi.spring.ui;
 
-import com.upc.gessi.spring.entity.Person;
-import com.upc.gessi.spring.entity.Recommend;
 import com.upc.gessi.spring.entity.Recommendation;
 import com.upc.gessi.spring.entity.Requirement;
 import com.upc.gessi.spring.exception.NotificationException;
 import com.upc.gessi.spring.service.BugzillaService;
 import com.upc.gessi.spring.service.StakeholdersRecommenderService;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,7 +23,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
