@@ -246,7 +246,7 @@ public class MainView extends VerticalLayout {
                     //sendNotification("Loading data and sending batch process. This may take a while...");
                     bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
                             bugzillaForm.getDate());
-                    service.setBatchProcess(bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
+                    service.setBatchProcess(usernameForm.getUsername(), bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
                             bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords(),
                             bugzillaForm.getKeywordTool());
                     updateList();
