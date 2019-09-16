@@ -7,6 +7,7 @@ import com.upc.gessi.spring.service.BugzillaService;
 import com.upc.gessi.spring.service.StakeholdersRecommenderService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -28,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Route
+@HtmlImport("frontend://styles/shared-styles.html")
 @PWA(name = "Stakeholders Recommender service web Application", shortName = "ORSR - Webapp")
 @StyleSheet("frontend://styles/styles.css") // Relative to Servlet URL
 public class MainView extends VerticalLayout {
@@ -91,8 +93,6 @@ public class MainView extends VerticalLayout {
         requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
         requirementsGrid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
 
-        requirementsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-
         recommendationGrid.addComponentColumn(item -> createPersonButton(recommendationGrid, item))
                 .setHeader("Person");
         recommendationGrid.removeColumnByKey("person");
@@ -102,7 +102,6 @@ public class MainView extends VerticalLayout {
 
         recommendationGrid.addColumns("appropiatenessScore");
         recommendationGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-
 
         filterText.setValueChangeMode(ValueChangeMode.EAGER);
         filterText.addValueChangeListener(e -> updateList());
@@ -147,6 +146,7 @@ public class MainView extends VerticalLayout {
 
         stepperField = new NumberField("Nº recommendations");
         stepperField.setValue(5d);
+        stepperField.setStep(1d);
         stepperField.setMin(1);
         stepperField.setHasControls(true);
         stepperField.setMinWidth("9em");
