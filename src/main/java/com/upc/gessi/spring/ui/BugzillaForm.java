@@ -20,7 +20,6 @@ public class BugzillaForm extends FormLayout {
     private MultiselectComboBox<String> statusField;
     private DatePicker datePicker;
     private ComboBox<KeywordEnum> keywordTool;
-    private Checkbox checkbox;
 
     private Boolean bugzillaKeywordTool;
 
@@ -31,7 +30,6 @@ public class BugzillaForm extends FormLayout {
         statusField = new MultiselectComboBox();
         datePicker = new DatePicker();
         keywordTool = new ComboBox<>();
-        checkbox = new Checkbox();
 
         productField.setLabel("Product");
         productField.setPlaceholder("ex.: Platform,PDE");
@@ -60,10 +58,7 @@ public class BugzillaForm extends FormLayout {
                 bugzillaKeywordTool = false;
         });
 
-        checkbox.setLabel("Show keywords");
-        checkbox.setValue(false);
-
-        add(productField, componentField, statusField, datePicker, keywordTool,  checkbox);
+        add(productField, componentField, statusField, datePicker, keywordTool);
 
         setResponsiveSteps(
                 new ResponsiveStep("0", 1),
@@ -93,7 +88,7 @@ public class BugzillaForm extends FormLayout {
     }
 
     public Boolean getKeywords() {
-        return checkbox.getValue();
+        return true;
     }
 
     public String getDate() {
