@@ -1,6 +1,5 @@
 package com.upc.gessi.spring.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.entity.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -17,8 +16,6 @@ public class BugzillaService {
 
     private static final String bugzillaUrl = "https://bugs.eclipse.org/bugs";
 
-    private String token;
-
     private RestTemplate restTemplate = new RestTemplate();
     private List<Responsible> responsibles;
     private List<Requirement> requirements;
@@ -26,8 +23,9 @@ public class BugzillaService {
     private List<Participant> participants;
     private List<Project> project;
 
-    private Map<String,List<BugzillaBug>> bugs=new HashMap<String,List<BugzillaBug>>();
-    private Map<String,Integer> emailToNumber;
+    private String token;
+
+    private Map<Person,List<BugzillaBug>> bugs=new HashMap<>();
 
     private static BugzillaService instance;
 
@@ -49,11 +47,11 @@ public class BugzillaService {
      * @param products
      * @param date
      */
-    public void extractInfo(String[] components, String[] statuses, String[] products, String date) {
+    public void extractInfo(String user, String[] components, String[] statuses, String[] products, String date) {
         setBugs(components, statuses, products, date);
-        extractPersons();
+        extractPersons(user);
         extractResponsibles();
-        extractParticipants();
+        extractParticipants(user);
         extractProject();
     }
 
@@ -67,21 +65,21 @@ public class BugzillaService {
         }
         p.setSpecifiedRequirements(specifiedRequirements);
 
-        List<Project> projList=new ArrayList<Project>();
+        List<Project> projList=new ArrayList<>();
         projList.add(p);
         project=projList;
     }
 
-    private void extractParticipants() {
+    private void extractParticipants(String username) {
         List<Participant> part=new ArrayList<Participant>();
         for (Person p:persons) {
             Participant participant=new Participant();
             participant.setPerson(p.getUsername());
-            //participant.setAvailability(100);
             participant.setProject("1");
             part.add(participant);
         }
         participants=part;
+        participants.add(new Participant(username, "1"));
     }
 
     private void setBugs(String[] components, String[] statuses, String[] products, String date) {
@@ -97,7 +95,7 @@ public class BugzillaService {
     }
 
     private List<Requirement> getRequirements(String date, String status, String product, String component) {
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,cc,assigned_to,summary,last_change_time,component" +
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,cc,assigned_to,summary,last_change_time,component," +
                 "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
@@ -105,22 +103,14 @@ public class BugzillaService {
                 "&limit=100000" +
                 "&offset=0");
         List<Requirement> reqs= new ArrayList<Requirement>();
-        emailToNumber=new HashMap<String,Integer>();
-        Integer counter=0;
-        // while (response.getBugs()!=null && response.getBugs().size()>0) {
+
         for (BugzillaBug bu:response.getBugs()) {
             if (bu.getAssigned_to() != "nobody@mozilla.org") {
                 String[] test = bu.getAssigned_to().split("@");
                 if (!test[1].equals("bugzilla.bugs")) {
-                    List<BugzillaBug> list = new ArrayList<BugzillaBug>();
-                    String assign;
-                    /*if (emailToNumber.containsKey(bu.getAssigned_to())) assign=emailToNumber.get(bu.getAssigned_to()).toString();
-                    else {
-                        emailToNumber.put(bu.getAssigned_to(),counter);
-                        assign=counter.toString();
-                        counter++;
-                    }*/
-                    assign = bu.getAssigned_to();
+                    List<BugzillaBug> list = new ArrayList<>();
+                    Person assign;
+                    assign = new Person(bu.getAssigned_to(),bu.getAssigned_to_detail().getReal_name());
                     if (bugs.containsKey(assign)) {
                         List<BugzillaBug> aux = bugs.get(assign);
                         aux.add(bu);
@@ -135,7 +125,7 @@ public class BugzillaService {
                     requirement.setModified_at(bu.getLast_change_time());
                     requirement.setCc_count(bu.getCc().size());
                     requirement.setEffort(1);
-                    requirement.setRequirementParts(Arrays.asList(new RequirementPart("1", bu.getComponent())));
+                    requirement.setRequirementParts(Collections.singletonList(new RequirementPart("1", bu.getComponent())));
 
                     reqs.add(requirement);
                 }
@@ -145,49 +135,29 @@ public class BugzillaService {
         return reqs;
     }
 
-    public void extractPersons() {
-        Set<String> stakeholders= new HashSet<String>();
-        stakeholders.addAll(bugs.keySet());
-        List<Person> pers = new ArrayList<Person>();
-        for (String s : stakeholders) {
-            pers.add(new Person(s));
-        }
-        persons = pers;
+    private void extractPersons(String username) {
+        persons = new ArrayList<>(bugs.keySet());
+        persons.add(new Person(username, username));
     }
 
-    public void extractResponsibles() {
-        List<Responsible> resp = new ArrayList<Responsible>();
+    private void extractResponsibles() {
+        List<Responsible> resp = new ArrayList<>();
         int i =0;
         for (Person person : persons) {
-            for (BugzillaBug b: bugs.get(person.getUsername())) {
-                if (requirements.contains(new Requirement(b.getId()))) {
-                    Responsible re = new Responsible();
-                    re.setPerson(person.getUsername());
-                    re.setRequirement(b.getId());
-                    resp.add(re);
+            if (bugs.containsKey(person)) {
+                for (BugzillaBug b : bugs.get(person)) {
+                    if (requirements.contains(new Requirement(b.getId()))) {
+                        Responsible re = new Responsible();
+                        re.setPerson(person.getUsername());
+                        re.setRequirement(b.getId());
+                        resp.add(re);
+                    }
                 }
             }
         }
         responsibles = resp;
     }
-    /*
-        public void extractRequirements() {
-            List<Requirement> req = new ArrayList<Requirement>();
-            Set<String> reqId = new HashSet<String>();
-            int i =0;
-            for (Responsible resp : responsibles) {
-                reqId.add(resp.getRequirement());
-            }
-            for (String s : reqId) {
-                List<BugzillaBug> bug = bugs.getBugs();
-                Requirement requirement = new Requirement();
-                requirement.setId(s);
-                requirement.setDescription(bug.getSummary());
-                req.add(requirement);
-            }
-            requirements = req;
-        }
-    */
+
     public List<Responsible> getResponsibles() {
         return responsibles;
     }
@@ -238,10 +208,6 @@ public class BugzillaService {
 
     public void setProject(List<Project> project) {
         this.project = project;
-    }
-
-    public Integer getNumber(String email) {
-        return emailToNumber.get(email);
     }
 
     public Boolean login(String user, String password) {

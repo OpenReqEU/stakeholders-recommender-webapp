@@ -15,6 +15,11 @@ public class Participant implements Serializable {
 
     }
 
+    public Participant(String person, String project) {
+        this.person = person;
+        this.project = project;
+    }
+
     public Integer getAvailability() {
         return availability;
     }

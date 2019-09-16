@@ -244,7 +244,7 @@ public class MainView extends VerticalLayout {
             try {
                 if (!bugzillaForm.isFieldEmpty()) {
                     //sendNotification("Loading data and sending batch process. This may take a while...");
-                    bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
+                    bugzillaService.extractInfo(usernameForm.getUsername(), bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
                             bugzillaForm.getDate());
                     service.setBatchProcess(bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
                             bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords(),
@@ -289,21 +289,14 @@ public class MainView extends VerticalLayout {
     }
 
     private Component createPersonButton(Grid<Recommendation> grid, Recommendation item) {
-        /*Label label = new Label();
-        label.getElement().setProperty("innerHTML", "<a class=\"link\" style=\"target-new: tab ! important;\">"
-                + item.getPerson().getUsername() + "</a>");
-        label.setClassName("link");
-        return label;*/
         Button b = new Button(item.getPerson().getUsername());
         b.addClickListener(event -> {
             PersonDetailsView personDetailsView = null;
             try {
                 personDetailsView = new PersonDetailsView(item.getPerson(),
-                        service.getPersonSkills(item.getPerson().getUsername()));
+                        service.getPersonSkills(item.getPerson().getName()));
                 personDetailsView.open();
-            } catch (NotificationException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+            } catch (NotificationException | IOException e) {
                 e.printStackTrace();
             }
         });

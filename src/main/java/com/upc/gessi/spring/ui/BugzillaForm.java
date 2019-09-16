@@ -65,8 +65,7 @@ public class BugzillaForm extends FormLayout {
                 new ResponsiveStep("18em", 2),
                 new ResponsiveStep("18em", 3),
                 new ResponsiveStep("18em", 4),
-                new ResponsiveStep("18em", 5),
-                new ResponsiveStep("18em", 6)
+                new ResponsiveStep("18em", 5)
                 );
     }
 

@@ -15,6 +15,7 @@ public class BugzillaBug implements Serializable {
     String last_change_time;
     String component;
     List<String> cc;
+    AssignedDetail assigned_to_detail;
 
     public String getAssigned_to() {
         return assigned_to;
@@ -70,5 +71,13 @@ public class BugzillaBug implements Serializable {
 
     public void setCc(List<String> cc) {
         this.cc = cc;
+    }
+
+    public AssignedDetail getAssigned_to_detail() {
+        return assigned_to_detail;
+    }
+
+    public void setAssigned_to_detail(AssignedDetail assigned_to_detail) {
+        this.assigned_to_detail = assigned_to_detail;
     }
 }

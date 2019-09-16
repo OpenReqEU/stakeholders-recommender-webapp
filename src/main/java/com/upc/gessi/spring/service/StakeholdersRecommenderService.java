@@ -92,8 +92,13 @@ public class StakeholdersRecommenderService {
                         "&organization=" + company,
                 new StringEntity(mapper.writeValueAsString(recommend), "UTF-8"));
 
-        return mapper.readValue(response, new TypeReference<List<Recommendation>>(){});
-
+        //Extract name from persons set
+        List<Recommendation> recommendations = mapper.readValue(response, new TypeReference<List<Recommendation>>(){});
+        for (Recommendation r : recommendations) {
+            Person p = findPerson(r.getPerson().getUsername());
+            r.getPerson().setName(p.getName());
+        }
+        return recommendations;
     }
 
     private Person findPerson(String username) throws NotificationException {
