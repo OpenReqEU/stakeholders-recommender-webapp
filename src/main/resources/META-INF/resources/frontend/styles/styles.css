@@ -76,3 +76,13 @@
     text-decoration: underline;
     cursor: pointer;
 }
+
+.vaadin-grid tr.v-selected {
+    background: #466c90;
+    color: #fff;
+}
+
+.vaadin-grid tr.v-selected:hover {
+    background: #5C8EBD;
+    color: #fff;
+}

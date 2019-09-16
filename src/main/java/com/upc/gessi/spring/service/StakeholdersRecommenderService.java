@@ -30,10 +30,14 @@ public class StakeholdersRecommenderService {
     private List<Recommendation> recommendations;
     private List<KeywordsBatch> keywordsBatch;
 
-    public void setBatchProcess(List<Participant> participants, List<Person> persons, List<Project> project,
+    public void setBatchProcess(String username, List<Participant> participants, List<Person> persons, List<Project> project,
                                 List<Requirement> requirements, List<Responsible> responsibles, Boolean keywords,
                                 Boolean keywordTool) throws IOException,
             NotificationException {
+
+        //Add logged username as a person of the project
+        persons.add(new Person(username));
+
         batchProcess = new BatchProcess();
         batchProcess.setParticipants(participants);
         batchProcess.setPersons(persons);

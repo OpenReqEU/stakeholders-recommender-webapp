@@ -73,7 +73,7 @@ public class BugzillaService {
     private void extractParticipants(String username) {
         List<Participant> part=new ArrayList<Participant>();
         for (Person p:persons) {
-            Participant participant=new Participant();
+            Participant participant = new Participant();
             participant.setPerson(p.getUsername());
             participant.setProject("1");
             part.add(participant);
@@ -135,8 +135,15 @@ public class BugzillaService {
         return reqs;
     }
 
+
     private void extractPersons(String username) {
         persons = new ArrayList<>(bugs.keySet());
+        for (Person p : persons) {
+            if (!p.getUsername().toLowerCase().contains("inbox") &&
+                    !p.getUsername().toLowerCase().contains("triage")) {
+                persons.remove(p);
+            }
+        }
         persons.add(new Person(username, username));
     }
 

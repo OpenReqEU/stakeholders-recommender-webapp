@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<dom-module id="cube-grid-theme" theme-for="vaadin-grid">
+    <template>
+        <style>
+            :host {
+                --_lumo-grid-selected-row-color: var(--lumo-primary-color-50pct);
+            }
+
+            [part~="row"]:hover [part~="body-cell"]{
+
+                background-color :  var(--lumo-primary-color-10pct);
+            }
+
+        </style>
+    </template>
+</dom-module>
+<body>
+
+</body>
+
+<!-- Add the line below to the hover so that text goes white when hovered over -->
+<!--color: white;-->
+
+</html>
