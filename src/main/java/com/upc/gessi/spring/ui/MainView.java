@@ -30,6 +30,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -258,6 +259,7 @@ public class MainView extends VerticalLayout {
                             bugzillaForm.getKeywordTool());
 
                     updateList();
+                    emptyRecommendationList();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -283,6 +285,10 @@ public class MainView extends VerticalLayout {
         else
             usernameForm.setUsername(usernameForm.getUsername());
 
+    }
+
+    private void emptyRecommendationList() {
+        recommendationGrid.setItems(new ArrayList<>());
     }
 
     private Component createRemoveButton(Grid<Requirement> grid, Requirement item) {
