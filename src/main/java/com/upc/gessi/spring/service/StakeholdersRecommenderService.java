@@ -61,7 +61,9 @@ public class StakeholdersRecommenderService {
     public List<Requirement> getRequirements(String value) {
         List<Requirement> reqs = new ArrayList<>();
         for (Requirement req : batchProcess.getRequirements()) {
-            if (req.getDescription().contains(value) || req.getId().contains(value)) reqs.add(req);
+            if (req.getDescription().contains(value) || req.getId().contains(value)) {
+                reqs.add(req);
+            }
         }
         return reqs;
     }

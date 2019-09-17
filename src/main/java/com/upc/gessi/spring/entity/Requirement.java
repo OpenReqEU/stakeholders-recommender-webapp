@@ -14,6 +14,8 @@ public class Requirement implements Serializable {
     private String modified_at;
     private Integer cc_count;
     private List<RequirementPart> requirementParts;
+    private Boolean isAssigned;
+    private String assigned;
 
     public Requirement() {
 
@@ -76,6 +78,18 @@ public class Requirement implements Serializable {
 
     public void setCc_count(Integer cc_count) {
         this.cc_count = cc_count;
+    }
+
+    public Boolean getIsAssigned() {
+        return isAssigned;
+    }
+
+    public void setIsAssigned(Boolean assigned) {
+        isAssigned = assigned;
+    }
+
+    public char getAssigned() {
+        return (isAssigned ? '✓' : '×');
     }
 
     @Override

@@ -32,7 +32,11 @@ public class Recommendation implements Serializable {
         this.requirement = requirement;
     }
 
-    public Double getAppropiatenessScore() {
+    public String getAppropiatenessScore() {
+        return String.format("%.2f", appropiatenessScore * 100) + " %";
+    }
+
+    public Double getAppropiatenessScoreDouble() {
         return appropiatenessScore;
     }
 

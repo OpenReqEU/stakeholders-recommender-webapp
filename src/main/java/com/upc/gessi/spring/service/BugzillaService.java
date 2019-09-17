@@ -47,11 +47,11 @@ public class BugzillaService {
      * @param products
      * @param date
      */
-    public void extractInfo(String user, String[] components, String[] statuses, String[] products, String date) {
+    public void extractInfo(String[] components, String[] statuses, String[] products, String date) {
         setBugs(components, statuses, products, date);
-        extractPersons(user);
+        extractPersons();
         extractResponsibles();
-        extractParticipants(user);
+        extractParticipants();
         extractProject();
     }
 
@@ -70,7 +70,7 @@ public class BugzillaService {
         project=projList;
     }
 
-    private void extractParticipants(String username) {
+    private void extractParticipants() {
         List<Participant> part=new ArrayList<Participant>();
         for (Person p:persons) {
             Participant participant = new Participant();
@@ -79,7 +79,6 @@ public class BugzillaService {
             part.add(participant);
         }
         participants=part;
-        participants.add(new Participant(username, "1"));
     }
 
     private void setBugs(String[] components, String[] statuses, String[] products, String date) {
@@ -125,6 +124,8 @@ public class BugzillaService {
                     requirement.setModified_at(bu.getLast_change_time());
                     requirement.setCc_count(bu.getCc().size());
                     requirement.setEffort(1);
+                    requirement.setIsAssigned(!assign.getUsername().toLowerCase().contains("inbox")
+                            && !assign.getUsername().toLowerCase().contains("triage"));
                     requirement.setRequirementParts(Collections.singletonList(new RequirementPart("1", bu.getComponent())));
 
                     reqs.add(requirement);
@@ -136,15 +137,16 @@ public class BugzillaService {
     }
 
 
-    private void extractPersons(String username) {
+    private void extractPersons() {
         persons = new ArrayList<>(bugs.keySet());
+        List<Person> delete = new ArrayList<>();
         for (Person p : persons) {
-            if (!p.getUsername().toLowerCase().contains("inbox") &&
-                    !p.getUsername().toLowerCase().contains("triage")) {
-                persons.remove(p);
+            if (p.getUsername().toLowerCase().contains("inbox") ||
+                    p.getUsername().toLowerCase().contains("triaged")) {
+                delete.add(p);
             }
         }
-        persons.add(new Person(username, username));
+        persons.removeAll(delete);
     }
 
     private void extractResponsibles() {

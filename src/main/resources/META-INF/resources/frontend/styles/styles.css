@@ -35,6 +35,7 @@
 
 .header {
     width: 100%;
+    vertical-align: center;
 }
 
 .custom-button {
@@ -85,4 +86,14 @@
 .vaadin-grid tr.v-selected:hover {
     background: #5C8EBD;
     color: #fff;
+}
+
+.login-box {
+    display: flex;
+    justify-content: flex-end;
+    width: 45%;
+}
+
+.hr-class {
+    margin-top: 8px;
 }

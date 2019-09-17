@@ -6,13 +6,18 @@ import com.upc.gessi.spring.exception.NotificationException;
 import com.upc.gessi.spring.service.BugzillaService;
 import com.upc.gessi.spring.service.StakeholdersRecommenderService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -42,8 +47,9 @@ public class MainView extends VerticalLayout {
     private Grid<Requirement> requirementsGrid = new Grid<>(Requirement.class);
     private Grid<Recommendation> recommendationGrid = new Grid<>(Recommendation.class);
     private BugzillaForm bugzillaForm = new BugzillaForm();
-    private TextField filterText = new TextField();
     private UsernameForm usernameForm = new UsernameForm();
+
+    private TextField filterText = new TextField();
 
     private Button showRequirementDetails = new Button();
     private Button recommend = new Button();
@@ -68,16 +74,12 @@ public class MainView extends VerticalLayout {
         HorizontalLayout header = new HorizontalLayout();
         Label title = new Label("Stakeholders Recommender");
         title.setClassName("title");
-        header.add(logo, title);
+        usernameForm.setClassName("login-box");
+        header.add(logo, title, usernameForm);
         header.setClassName("header");
 
         filterText.setPlaceholder("Search...");
         filterText.setClearButtonVisible(true);
-
-        /*requirementsGrid.setColumns("id", "description", "modified_at");
-        requirementsGrid.getColumnByKey("id").setFlexGrow(1).setResizable(true);
-        requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
-        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);*/
 
         // Or you can use an ordinary function to setup the component
         requirementsGrid.addComponentColumn(item -> createRemoveButton(requirementsGrid, item))
@@ -88,10 +90,14 @@ public class MainView extends VerticalLayout {
         requirementsGrid.removeColumnByKey("modified_at");
         requirementsGrid.removeColumnByKey("requirementParts");
         requirementsGrid.removeColumnByKey("cc_count");
+        requirementsGrid.removeColumnByKey("isAssigned");
+        requirementsGrid.removeColumnByKey("assigned");
 
-        requirementsGrid.addColumns("description", "cc_count", "modified_at");
+        requirementsGrid.addColumns("description", "cc_count", "modified_at", "assigned");
         requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
-        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
+        requirementsGrid.getColumnByKey("cc_count").setFlexGrow(1).setResizable(true);
+        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(4).setResizable(true);
+        requirementsGrid.getColumnByKey("assigned").setFlexGrow(1).setResizable(true);
 
         recommendationGrid.addComponentColumn(item -> createPersonButton(recommendationGrid, item))
                 .setHeader("Person");
@@ -99,6 +105,7 @@ public class MainView extends VerticalLayout {
         recommendationGrid.removeColumnByKey("requirement");
         recommendationGrid.removeColumnByKey("appropiatenessScore");
         recommendationGrid.removeColumnByKey("availabilityScore");
+        recommendationGrid.removeColumnByKey("appropiatenessScoreDouble");
 
         recommendationGrid.addColumns("appropiatenessScore");
         recommendationGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
@@ -157,8 +164,7 @@ public class MainView extends VerticalLayout {
         filterText.setClassName("filter");
 
         VerticalLayout leftPanel = new VerticalLayout();
-        leftPanel.add(buttons);
-        leftPanel.add(requirementsGrid);
+        leftPanel.add(buttons, requirementsGrid);
 
         rejectRecommendation.getClassNames().add("custom-button");
         rejectRecommendation.setText("Reject recommendation");
@@ -206,7 +212,7 @@ public class MainView extends VerticalLayout {
                     service.undoRejection(usernameForm.getUsername(), lastRejection);
                     if (selectedRequirement.getId().equals(lastRejection.getRequirement().getId())) {
                         this.recommendations.add(lastRejection);
-                        this.recommendations.sort(Comparator.comparingDouble(Recommendation::getAppropiatenessScore)
+                        this.recommendations.sort(Comparator.comparingDouble(Recommendation::getAppropiatenessScoreDouble)
                                 .reversed());
                         recommendationGrid.setItems(this.recommendations);
                     }
@@ -243,12 +249,14 @@ public class MainView extends VerticalLayout {
         loadData.addClickListener(event -> {
             try {
                 if (!bugzillaForm.isFieldEmpty()) {
-                    //sendNotification("Loading data and sending batch process. This may take a while...");
-                    bugzillaService.extractInfo(usernameForm.getUsername(), bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
+
+                    bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
                             bugzillaForm.getDate());
+
                     service.setBatchProcess(usernameForm.getUsername(), bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
                             bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords(),
                             bugzillaForm.getKeywordTool());
+
                     updateList();
                 }
             } catch (IOException e) {
@@ -263,11 +271,11 @@ public class MainView extends VerticalLayout {
         subheader.add(bugzillaForm, loadData);
         subheader.setClassName("subheader");
 
-        toolbar.add(usernameForm, subheader);
+        toolbar.add(subheader);
         subheader.setWidthFull();
         toolbar.setWidthFull();
 
-        add(header, toolbar, mainPanel);
+        add(header, toolbar, new Hr(), mainPanel);
 
         setSizeFull();
         if (usernameForm.getUsername() == null)
@@ -289,12 +297,12 @@ public class MainView extends VerticalLayout {
     }
 
     private Component createPersonButton(Grid<Recommendation> grid, Recommendation item) {
-        Button b = new Button(item.getPerson().getUsername());
+        Button b = new Button(item.getPerson().getName());
         b.addClickListener(event -> {
             PersonDetailsView personDetailsView = null;
             try {
                 personDetailsView = new PersonDetailsView(item.getPerson(),
-                        service.getPersonSkills(item.getPerson().getName()));
+                        service.getPersonSkills(item.getPerson().getUsername()));
                 personDetailsView.open();
             } catch (NotificationException | IOException e) {
                 e.printStackTrace();
