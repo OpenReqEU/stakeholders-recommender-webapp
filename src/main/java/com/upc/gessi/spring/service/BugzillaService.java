@@ -125,8 +125,8 @@ public class BugzillaService {
                     requirement.setModified_at(bu.getLast_change_time());
                     requirement.setCc_count(bu.getCc().size());
                     requirement.setEffort(1);
-                    requirement.setIsAssigned(!assign.getUsername().toLowerCase().contains("inbox")
-                            && !assign.getUsername().toLowerCase().contains("triage"));
+                    requirement.setAssigned(!assign.getUsername().toLowerCase().contains("inbox")
+                            && !assign.getUsername().toLowerCase().contains("triage") ? assign.getName() : null);
                     requirement.setRequirementParts(Collections.singletonList(new RequirementPart("1", bu.getComponent())));
 
                     reqs.add(requirement);
@@ -239,9 +239,27 @@ public class BugzillaService {
 
     public Boolean assignUser(Recommendation selectedRecommendation) {
         try {
-            String callUrl = bugzillaUrl + "/rest/bug/" + selectedRecommendation.getRequirement().getId();
+            String callUrl = bugzillaUrl + "rest/bug/" + selectedRecommendation.getRequirement().getId() + "?token=" + token;
             UpdateBug updateBug = new UpdateBug();
             updateBug.setAssigned_to(selectedRecommendation.getPerson().getUsername());
+            ResponseEntity response = restTemplate.exchange(
+                    callUrl,
+                    HttpMethod.PUT,
+                    new HttpEntity<>(updateBug),
+                    new ParameterizedTypeReference<BugzillaToken>() {
+                    });
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Boolean ccUser(Recommendation selectedRecommendation) {
+        try {
+            String callUrl = bugzillaUrl + "rest/bug/" + selectedRecommendation.getRequirement().getId() + "?token=" + token;
+            UpdateBug updateBug = new UpdateBug();
+            updateBug.setCc(new CcList(Collections.singletonList(selectedRecommendation.getPerson().getUsername())));
             ResponseEntity response = restTemplate.exchange(
                     callUrl,
                     HttpMethod.PUT,

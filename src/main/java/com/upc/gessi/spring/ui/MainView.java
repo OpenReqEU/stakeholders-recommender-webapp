@@ -52,11 +52,6 @@ public class MainView extends VerticalLayout {
 
     private TextField filterText = new TextField();
 
-    private Button showRequirementDetails = new Button();
-    private Button recommend = new Button();
-    private Button rejectRecommendation = new Button();
-    private Button acceptRecommendation = new Button();
-    private Button undoRejection = new Button();
     private NumberField stepperField;
 
     private Requirement selectedRequirement;
@@ -91,7 +86,6 @@ public class MainView extends VerticalLayout {
         requirementsGrid.removeColumnByKey("modified_at");
         requirementsGrid.removeColumnByKey("requirementParts");
         requirementsGrid.removeColumnByKey("cc_count");
-        requirementsGrid.removeColumnByKey("isAssigned");
         requirementsGrid.removeColumnByKey("assigned");
 
         requirementsGrid.addColumns("description", "cc_count", "modified_at", "assigned");
@@ -114,6 +108,7 @@ public class MainView extends VerticalLayout {
         filterText.setValueChangeMode(ValueChangeMode.EAGER);
         filterText.addValueChangeListener(e -> updateList());
 
+        Button recommend = new Button();
         recommend.setText("Recommend stakeholders");
         recommend.addClickListener(event -> {
             if (selectedRequirement != null && usernameForm.getUsername() != null) {
@@ -126,6 +121,7 @@ public class MainView extends VerticalLayout {
             }
         });
 
+        Button showRequirementDetails = new Button();
         showRequirementDetails.setText("Show requirement details");
         showRequirementDetails.addClickListener(event -> {
             if (selectedRequirement == null) {
@@ -167,6 +163,7 @@ public class MainView extends VerticalLayout {
         VerticalLayout leftPanel = new VerticalLayout();
         leftPanel.add(buttons, requirementsGrid);
 
+        Button rejectRecommendation = new Button();
         rejectRecommendation.getClassNames().add("custom-button");
         rejectRecommendation.setText("Reject recommendation");
         rejectRecommendation.addClickListener(event -> {
@@ -192,19 +189,33 @@ public class MainView extends VerticalLayout {
             }
         });
 
+        Button acceptRecommendation = new Button();
         acceptRecommendation.getClassNames().add("custom-button");
         acceptRecommendation.setText("Accept recommendation");
         acceptRecommendation.addClickListener(event -> {
-            //TODO uncomment when done
-            /*if (selectedRecommendation != null) {
-                bugzillaService.assignUser(selectedRecommendation);
-                sendNotification("Recommendation accepted");
+            if (selectedRecommendation != null) {
+                boolean result = bugzillaService.assignUser(selectedRecommendation);
+                if (result) sendNotification("Recommendation accepted");
+                else sendNotification("There was an error during the cc process. Please contact an administrator.");
             } else {
                 sendNotification("No recommendation selected");
-            }*/
-            sendNotification("Method not implemented");
+            }
         });
 
+        Button ccUser = new Button();
+        ccUser.getClassNames().add("custom-button");
+        ccUser.setText("Cc user");
+        ccUser.addClickListener(event -> {
+            if (selectedRecommendation != null) {
+                boolean result = bugzillaService.ccUser(selectedRecommendation);
+                if (result) sendNotification("User added to cc list");
+                else sendNotification("There was an error during the cc process. Please contact an administrator.");
+            } else {
+                sendNotification("No recommendation selected");
+            }
+        });
+
+        Button undoRejection = new Button();
         undoRejection.getClassNames().add("custom-button");
         undoRejection.setText("Undo last rejection");
         undoRejection.addClickListener(event -> {
@@ -230,7 +241,7 @@ public class MainView extends VerticalLayout {
 
         //BUILD LAYOUT
         HorizontalLayout recommendationButtons = new HorizontalLayout();
-        recommendationButtons.add(acceptRecommendation, rejectRecommendation, undoRejection);
+        recommendationButtons.add(ccUser, acceptRecommendation, rejectRecommendation, undoRejection);
 
         VerticalLayout rightPanel = new VerticalLayout();
         rightPanel.add(recommendationButtons);
