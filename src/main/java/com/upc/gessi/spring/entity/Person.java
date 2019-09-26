@@ -52,7 +52,8 @@ public class Person implements Serializable {
 
         Person user = (Person) o;
 
-        return user.name.equals(name) &&
+        return
+                //user.name.equals(name) &&
                 user.username.equals(username);
     }
 

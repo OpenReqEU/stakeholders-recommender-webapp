@@ -36,7 +36,8 @@ public class StakeholdersRecommenderService {
             NotificationException {
 
         //Add logged username as a person of the project
-        persons.add(new Person(username));
+        if (!persons.contains(new Person(username)))
+            persons.add(new Person(username));
 
         batchProcess = new BatchProcess();
         batchProcess.setParticipants(participants);

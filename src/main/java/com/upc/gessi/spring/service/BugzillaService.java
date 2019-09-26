@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class BugzillaService {
 
-    private static final String bugzillaUrl = "https://bugs.eclipse.org/bugs";
+    private static final String bugzillaUrl = "http://localhost:8080/bugzilla/";
 
     private RestTemplate restTemplate = new RestTemplate();
     private List<Responsible> responsibles;
@@ -87,7 +87,8 @@ public class BugzillaService {
             for (String product : products) {
                 for (String status : statuses) {
                     List<Requirement> reqs = getRequirements(date, status, product, component);
-                    requirements.addAll(reqs);
+                    for (Requirement r : reqs)
+                        if (!requirements.contains(r)) requirements.add(r);
                 }
             }
         }
