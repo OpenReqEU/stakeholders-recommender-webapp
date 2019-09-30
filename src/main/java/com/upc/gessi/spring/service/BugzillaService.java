@@ -1,5 +1,6 @@
 package com.upc.gessi.spring.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.entity.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -14,7 +15,8 @@ import java.util.*;
  */
 public class BugzillaService {
 
-    private static final String bugzillaUrl = "http://localhost:8080/bugzilla/";
+    private static final String bugzillaUrl = "https://bugs.eclipse.org/bugs/";
+    private static final String gerritUrl = "https://git.eclipse.org/r/"; // /changes /accounts
 
     private RestTemplate restTemplate = new RestTemplate();
     private List<Responsible> responsibles;
@@ -95,7 +97,7 @@ public class BugzillaService {
     }
 
     private List<Requirement> getRequirements(String date, String status, String product, String component) {
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,cc,assigned_to,summary,last_change_time,component," +
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,see_also,cc,assigned_to,summary,last_change_time,component," +
                 "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
@@ -128,6 +130,8 @@ public class BugzillaService {
                     requirement.setAssigned(!assign.getUsername().toLowerCase().contains("inbox")
                             && !assign.getUsername().toLowerCase().contains("triage") ? assign.getName() : null);
                     requirement.setRequirementParts(Collections.singletonList(new RequirementPart("1", bu.getComponent())));
+                    if (bu.getSee_also() != null )
+                        requirement.setGerrit(bu.getSee_also().stream().filter(s -> s.contains("https://git.eclipse.org/r/")).findFirst().orElse(null));
 
                     reqs.add(requirement);
                 }
@@ -222,7 +226,7 @@ public class BugzillaService {
 
     public Boolean login(String user, String password) {
         try {
-            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password;
+            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password + "&api_key=dwWPTFBQpqerkVoZsRX1WVmg693T4AmvFSA0jSIO";
             ResponseEntity<BugzillaToken> response = restTemplate.exchange(
                     callUrl,
                     HttpMethod.GET,
@@ -233,7 +237,7 @@ public class BugzillaService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
     }
 
@@ -270,6 +274,43 @@ public class BugzillaService {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public void addGerritUserToList(Requirement selectedRequirement, List<Recommendation> recommendations, int k) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            String callUrl = gerritUrl + "changes/" + selectedRequirement.getGerrit().split(gerritUrl)[1];
+            ResponseEntity<String> response = restTemplate.exchange(
+                    callUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<String>() {
+                    });
+            String body = response.getBody().replace(")]}'", "");
+            GerritChange gerritChange = objectMapper.readValue(body, GerritChange.class);
+
+            callUrl = gerritUrl + "accounts/" + gerritChange.getOwner().get_account_id();
+            response = restTemplate.exchange(
+                    callUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<String>() {
+                    });
+
+            body = response.getBody().replace(")]}'", "");
+            Account account = objectMapper.readValue(body, Account.class);
+            Person person = persons.stream().filter(p -> p.getUsername().equals(account.getEmail())).findFirst().orElse(null);
+
+            if (person == null) throw new Exception("Person not found");
+            else if (!recommendations.stream().anyMatch(r -> r.getPerson().getUsername().equals(person.getUsername()))) {
+                Recommendation recommendation = new Recommendation(person, selectedRequirement, 1.0);
+                recommendations.remove(k-1);
+                recommendations.add(0, recommendation);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Requirement implements Serializable {
@@ -15,6 +16,7 @@ public class Requirement implements Serializable {
     private Integer cc_count;
     private List<RequirementPart> requirementParts;
     private String assigned;
+    private String gerrit;
 
     public Requirement() {
 
@@ -87,10 +89,19 @@ public class Requirement implements Serializable {
         this.assigned = assigned;
     }
 
+    public String getGerrit() {
+        return gerrit;
+    }
+
+    public void setGerrit(String gerrit) {
+        this.gerrit = gerrit;
+    }
+
     @Override
     public boolean equals(Object o) {
         Requirement r = (Requirement) o;
         if (r == null || r.getId() == null || this.getId() == null) return false;
         return r.getId().equals(this.getId());
     }
+
 }

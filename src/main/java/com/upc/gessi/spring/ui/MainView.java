@@ -87,6 +87,7 @@ public class MainView extends VerticalLayout {
         requirementsGrid.removeColumnByKey("requirementParts");
         requirementsGrid.removeColumnByKey("cc_count");
         requirementsGrid.removeColumnByKey("assigned");
+        requirementsGrid.removeColumnByKey("gerrit");
 
         requirementsGrid.addColumns("description", "cc_count", "modified_at", "assigned");
         requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
@@ -159,6 +160,7 @@ public class MainView extends VerticalLayout {
         HorizontalLayout buttons = new HorizontalLayout();
         buttons.add(filterText, showRequirementDetails, recommend, stepperField);
         filterText.setClassName("filter");
+        filterText.setClassName("filter");
 
         VerticalLayout leftPanel = new VerticalLayout();
         leftPanel.add(buttons, requirementsGrid);
@@ -196,7 +198,7 @@ public class MainView extends VerticalLayout {
             if (selectedRecommendation != null) {
                 boolean result = bugzillaService.assignUser(selectedRecommendation);
                 if (result) sendNotification("Recommendation accepted");
-                else sendNotification("There was an error during the cc process. Please contact an administrator.");
+                else sendNotification("There was an error during the assignation process. Please contact an administrator.");
             } else {
                 sendNotification("No recommendation selected");
             }
@@ -358,6 +360,9 @@ public class MainView extends VerticalLayout {
         try {
             recommendations = service.recommend(selectedRequirement,
                     usernameForm.getUsername(), k);
+            if (selectedRequirement.getGerrit() != null) {
+                bugzillaService.addGerritUserToList(selectedRequirement, recommendations, k);
+            }
             setRecommendation(recommendations);
         } catch (IOException e) {
             e.printStackTrace();

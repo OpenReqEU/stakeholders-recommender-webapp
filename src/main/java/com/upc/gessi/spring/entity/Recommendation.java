@@ -16,6 +16,12 @@ public class Recommendation implements Serializable {
 
     }
 
+    public Recommendation(Person person, Requirement requirement, Double appropiatenessScore) {
+        this.person = person;
+        this.requirement = requirement;
+        this.appropiatenessScore = appropiatenessScore;
+    }
+
     public Person getPerson() {
         return person;
     }
