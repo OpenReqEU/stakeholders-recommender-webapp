@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,8 +41,6 @@ import java.util.List;
 @PWA(name = "Stakeholders Recommender service web Application", shortName = "ORSR - Webapp")
 @StyleSheet("frontend://styles/styles.css") // Relative to Servlet URL
 public class MainView extends VerticalLayout {
-
-    private static final String baseLinkUrl = "https://bugs.eclipse.org/bugs/show_bug.cgi?id=";
 
     private StakeholdersRecommenderService service = StakeholdersRecommenderService.getInstance();
     private BugzillaService bugzillaService = BugzillaService.getInstance();
@@ -85,15 +85,15 @@ public class MainView extends VerticalLayout {
         requirementsGrid.removeColumnByKey("effort");
         requirementsGrid.removeColumnByKey("modified_at");
         requirementsGrid.removeColumnByKey("requirementParts");
-        requirementsGrid.removeColumnByKey("cc_count");
+        requirementsGrid.removeColumnByKey("cc");
         requirementsGrid.removeColumnByKey("assigned");
         requirementsGrid.removeColumnByKey("gerrit");
 
-        requirementsGrid.addColumns("description", "cc_count", "modified_at", "assigned");
+        requirementsGrid.addColumns("description", "cc", "modified_at", "assigned");
         requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
-        requirementsGrid.getColumnByKey("cc_count").setFlexGrow(1).setResizable(true);
-        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(4).setResizable(true);
-        requirementsGrid.getColumnByKey("assigned").setFlexGrow(1).setResizable(true);
+        requirementsGrid.getColumnByKey("cc").setFlexGrow(1).setResizable(true);
+        requirementsGrid.getColumnByKey("modified_at").setFlexGrow(3).setResizable(true);
+        requirementsGrid.getColumnByKey("assigned").setFlexGrow(4).setResizable(true);
 
         recommendationGrid.addComponentColumn(item -> createPersonButton(recommendationGrid, item))
                 .setHeader("Person");
@@ -198,7 +198,7 @@ public class MainView extends VerticalLayout {
             if (selectedRecommendation != null) {
                 boolean result = bugzillaService.assignUser(selectedRecommendation);
                 if (result) sendNotification("Recommendation accepted");
-                else sendNotification("There was an error during the assignation process. Please contact an administrator.");
+                else sendNotification("You don't have permission to perform this operation. Please contact an administrator.");
             } else {
                 sendNotification("No recommendation selected");
             }
@@ -211,7 +211,7 @@ public class MainView extends VerticalLayout {
             if (selectedRecommendation != null) {
                 boolean result = bugzillaService.ccUser(selectedRecommendation);
                 if (result) sendNotification("User added to cc list");
-                else sendNotification("There was an error during the cc process. Please contact an administrator.");
+                else sendNotification("You don't have permission to perform this operation. Please contact an administrator.");
             } else {
                 sendNotification("No recommendation selected");
             }
@@ -307,7 +307,7 @@ public class MainView extends VerticalLayout {
     private Component createRemoveButton(Grid<Requirement> grid, Requirement item) {
         Label label = new Label();
         label.getElement().setProperty("innerHTML", "<a href=\""
-                + baseLinkUrl
+                + bugzillaService.getBugzillaUrl() + "show_bug.cgi?id="
                 + item.getId()
                 + "\" target=\"_blank\" class=\"link\" style=\"target-new: tab ! important;\">"
                 + item.getId() + "</a>");

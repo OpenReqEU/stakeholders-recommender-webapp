@@ -18,7 +18,7 @@ public class UsernameDialog extends Dialog {
     private VerticalLayout verticalLayout ;
     private TextField textField;
     private PasswordField passwordField;
-    private Button closeButton;
+    private TextField apiKey;
     private Button setUsername;
 
     public UsernameDialog(UsernameForm usernameForm, String username) {
@@ -33,12 +33,17 @@ public class UsernameDialog extends Dialog {
 
         textField = new TextField();
         textField.setLabel("Username (email)");
-        textField.setPlaceholder("Platform-UI-Inbox@eclipse.org");
         textField.setMinWidth("18em");
+        textField.setRequired(true);
 
         passwordField = new PasswordField();
         passwordField.setLabel("Password");
         passwordField.setMinWidth("18em");
+        passwordField.setRequired(true);
+
+        apiKey = new TextField();
+        apiKey.setLabel("API key (only if required)");
+        apiKey.setMinWidth("18em");
 
         setUsername = new Button("Log in");
         setUsername.setClassName("custom-button");
@@ -46,11 +51,7 @@ public class UsernameDialog extends Dialog {
             login();
         });
 
-        /*closeButton = new Button("Close");
-        closeButton.setClassName("custom-button");
-        closeButton.addClickListener(event -> {
-            closeDialog();
-        });*/
+
 
         if (username != null)
             textField.setValue(username);
@@ -59,7 +60,7 @@ public class UsernameDialog extends Dialog {
         buttons.add(setUsername);
 
         verticalLayout = new VerticalLayout();
-        verticalLayout.add(label, textField, passwordField, buttons);
+        verticalLayout.add(label, textField, passwordField, apiKey, buttons);
 
         add(verticalLayout);
 
@@ -70,13 +71,14 @@ public class UsernameDialog extends Dialog {
     }
 
     private void login() {
-        Boolean b = BugzillaService.getInstance().login(textField.getValue(), passwordField.getValue());
+        Boolean b = BugzillaService.getInstance().login(textField.getValue(), passwordField.getValue(), apiKey.getValue());
         if (b) {
             usernameForm.setUsername(textField.getValue().trim());
             close();
         } else {
             Notification notification = new Notification(
-                    "User or password incorrect. Please try again", 5000,
+                    "Either your credentials are incorrect, or you need to use a valid API key to log in. Please contact " +
+                            "an administrator", 5000,
                     Notification.Position.TOP_CENTER);
             notification.open();
         }

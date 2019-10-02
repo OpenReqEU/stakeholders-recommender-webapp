@@ -1,11 +1,13 @@
 package com.upc.gessi.spring.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.upc.gessi.spring.PropertiesLoader;
 import com.upc.gessi.spring.entity.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -13,10 +15,11 @@ import java.util.*;
 /**
  * Imported class from @acasas
  */
+@Service
 public class BugzillaService {
 
-    private static final String bugzillaUrl = "https://bugs.eclipse.org/bugs/";
-    private static final String gerritUrl = "https://git.eclipse.org/r/"; // /changes /accounts
+    private final String bugzillaUrl = PropertiesLoader.getProperty("bugzillaUrl");
+    private String gerritUrl = PropertiesLoader.getProperty("gerritUrl"); // /changes /accounts
 
     private RestTemplate restTemplate = new RestTemplate();
     private List<Responsible> responsibles;
@@ -125,7 +128,7 @@ public class BugzillaService {
                     requirement.setId(bu.getId());
                     requirement.setDescription(bu.getSummary());
                     requirement.setModified_at(bu.getLast_change_time());
-                    requirement.setCc_count(bu.getCc().size());
+                    requirement.setCc(bu.getCc().size());
                     requirement.setEffort(1);
                     requirement.setAssigned(!assign.getUsername().toLowerCase().contains("inbox")
                             && !assign.getUsername().toLowerCase().contains("triage") ? assign.getName() : null);
@@ -224,9 +227,10 @@ public class BugzillaService {
         this.project = project;
     }
 
-    public Boolean login(String user, String password) {
+    public Boolean login(String user, String password, String apiKey) {
         try {
-            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password + "&api_key=dwWPTFBQpqerkVoZsRX1WVmg693T4AmvFSA0jSIO";
+            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password + "&api_key=" + apiKey;
+            System.out.println(callUrl);
             ResponseEntity<BugzillaToken> response = restTemplate.exchange(
                     callUrl,
                     HttpMethod.GET,
@@ -237,7 +241,7 @@ public class BugzillaService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return true;
+            return false;
         }
     }
 
@@ -308,6 +312,9 @@ public class BugzillaService {
                 Recommendation recommendation = new Recommendation(person, selectedRequirement, 1.0);
                 recommendations.remove(k-1);
                 recommendations.add(0, recommendation);
+            } else {
+                recommendations.remove(recommendations.stream().filter(r -> r.getPerson().getUsername().equals(person.getUsername())).findFirst().orElse(null));
+                recommendations.add(0, new Recommendation(person, selectedRequirement, 1.0));
             }
         } catch (Exception e) {
             e.printStackTrace();

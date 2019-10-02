@@ -29,7 +29,6 @@ public class UsernameForm extends HorizontalLayout {
 
         add(label, mail, editUser);
 
-        //TODO load cache
         Object user = UI.getCurrent().getSession().getAttribute("username");
         username = user != null ? user.toString() : null;
 
