@@ -2,6 +2,7 @@ package com.upc.gessi.spring.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.upc.gessi.spring.PropertiesLoader;
 import com.upc.gessi.spring.entity.*;
 import com.upc.gessi.spring.exception.NotificationException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class StakeholdersRecommenderService {
 
     //private static final String stakeholdersRecommenderServiceUrl = "http://localhost:9410/upc/stakeholders-recommender";
-    private static final String stakeholdersRecommenderServiceUrl = "http://217.172.12.199:9410/upc/stakeholders-recommender";
+    private static final String stakeholdersRecommenderServiceUrl = PropertiesLoader.getProperty("stakeholdersRecommenderUrl");
     private static final String company = "Vogella";
 
     private static StakeholdersRecommenderService instance;
