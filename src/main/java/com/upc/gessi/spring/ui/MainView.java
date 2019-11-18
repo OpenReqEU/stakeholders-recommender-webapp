@@ -6,9 +6,7 @@ import com.upc.gessi.spring.exception.NotificationException;
 import com.upc.gessi.spring.service.BugzillaService;
 import com.upc.gessi.spring.service.StakeholdersRecommenderService;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.grid.Grid;
@@ -16,8 +14,6 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -28,11 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -88,6 +83,8 @@ public class MainView extends VerticalLayout {
         requirementsGrid.removeColumnByKey("cc");
         requirementsGrid.removeColumnByKey("assigned");
         requirementsGrid.removeColumnByKey("gerrit");
+        requirementsGrid.removeColumnByKey("status");
+        requirementsGrid.removeColumnByKey("stalebug");
 
         requirementsGrid.addColumns("description", "cc", "modified_at", "assigned");
         requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
@@ -141,6 +138,7 @@ public class MainView extends VerticalLayout {
         requirementsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         requirementsGrid.addSelectionListener(event -> {
             selectedRequirement = event.getFirstSelectedItem().orElse(null);
+            if (selectedRequirement != null) recommend(stepperField.getValue().intValue());
         });
 
         recommendationGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
@@ -158,7 +156,9 @@ public class MainView extends VerticalLayout {
         stepperField.setClassName("down");
 
         HorizontalLayout buttons = new HorizontalLayout();
-        buttons.add(filterText, showRequirementDetails, recommend, stepperField);
+        buttons.add(filterText, showRequirementDetails,
+                recommend,
+                stepperField);
         filterText.setClassName("filter");
         filterText.setClassName("filter");
 
@@ -264,7 +264,7 @@ public class MainView extends VerticalLayout {
             try {
                 if (!bugzillaForm.isFieldEmpty()) {
 
-                    bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getProducts(),
+                    bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getProducts(),
                             bugzillaForm.getDate());
 
                     service.setBatchProcess(usernameForm.getUsername(), bugzillaService.getParticipants(), bugzillaService.getPersons(), bugzillaService.getProject(),
@@ -341,8 +341,10 @@ public class MainView extends VerticalLayout {
     List<Recommendation> recommendations;
 
     private void updateList() {
-        requirementsGrid.setItems(service.getRequirements(filterText.getValue()));
-        if (service.getRequirements(filterText.getValue()).size() == 0) {
+        List<Requirement> reqs = service.getRequirements(filterText.getValue(), Arrays.asList(bugzillaForm.getStatuses()));
+        requirementsGrid.setItems(reqs);
+        System.out.println("Nº reqs: " + reqs.size());
+        if (reqs.size() == 0) {
             sendNotification("No requirements found");
         }
     }

@@ -14,6 +14,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,12 +41,21 @@ public class StakeholdersRecommenderService {
         if (!persons.contains(new Person(username)))
             persons.add(new Person(username));
 
+        List<Requirement> filteredBugs = requirements.stream().filter(r -> (r.getStalebug() != null && !r.getStalebug())).collect(Collectors.toList());
+        List<String> filteredBugsIds = filteredBugs.stream().map(Requirement::getId).collect(Collectors.toList());
+        List<Responsible> filteredResponsibles = responsibles.stream().filter(r -> filteredBugsIds.contains(r.getRequirement())).collect(Collectors.toList());
+        for (Project p : project) {
+            List<String> forbbidenRequirements = requirements.stream().filter(r -> (r.getStalebug() != null && r.getStalebug()))
+                    .map(Requirement::getId).collect(Collectors.toList());
+            p.setSpecifiedRequirements(p.getSpecifiedRequirements().stream().filter(s -> !forbbidenRequirements.contains(s)).collect(Collectors.toList()));
+        }
+
         batchProcess = new BatchProcess();
         batchProcess.setParticipants(participants);
         batchProcess.setPersons(persons);
         batchProcess.setProjects(project);
-        batchProcess.setRequirements(requirements);
-        batchProcess.setResponsibles(responsibles);
+        batchProcess.setRequirements(filteredBugs);
+        batchProcess.setResponsibles(filteredResponsibles);
         batch_process(keywords, keywordTool);
     }
 
@@ -60,11 +70,13 @@ public class StakeholdersRecommenderService {
         return instance;
     }
 
-    public List<Requirement> getRequirements(String value) {
+    public List<Requirement> getRequirements(String value, List<String> statuses) {
         List<Requirement> reqs = new ArrayList<>();
         for (Requirement req : batchProcess.getRequirements()) {
             if (req.getDescription().contains(value) || req.getId().contains(value)) {
-                reqs.add(req);
+                if (statuses.contains(req.getStatus().toLowerCase())) {
+                    reqs.add(req);
+                }
             }
         }
         return reqs;
@@ -138,7 +150,7 @@ public class StakeholdersRecommenderService {
                 }
             }
             System.out.println(url);
-            System.out.println(content.toString());
+            //System.out.println(content.toString());
 
             CloseableHttpResponse response = client.execute(httpPost);
             System.out.println("HTTP Request " + httpPost.getMethod());

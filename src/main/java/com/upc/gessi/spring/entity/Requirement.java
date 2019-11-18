@@ -16,6 +16,8 @@ public class Requirement implements Serializable {
     private List<RequirementPart> requirementParts;
     private String assigned;
     private String gerrit;
+    private Boolean stalebug;
+    private String status;
 
     public Requirement() {
 
@@ -94,6 +96,22 @@ public class Requirement implements Serializable {
 
     public void setGerrit(String gerrit) {
         this.gerrit = gerrit;
+    }
+
+    public Boolean getStalebug() {
+        return stalebug;
+    }
+
+    public void setStalebug(Boolean stalebug) {
+        this.stalebug = stalebug;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override

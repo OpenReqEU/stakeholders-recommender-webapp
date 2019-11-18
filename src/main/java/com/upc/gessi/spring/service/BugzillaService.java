@@ -48,12 +48,11 @@ public class BugzillaService {
     /**
      * Get bugzilla info
      * @param components
-     * @param statuses
      * @param products
      * @param date
      */
-    public void extractInfo(String[] components, String[] statuses, String[] products, String date) {
-        setBugs(components, statuses, products, date);
+    public void extractInfo(String[] components, String[] products, String date) {
+        setBugs(components, products, date);
         extractPersons();
         extractResponsibles();
         extractParticipants();
@@ -86,22 +85,22 @@ public class BugzillaService {
         participants=part;
     }
 
-    private void setBugs(String[] components, String[] statuses, String[] products, String date) {
+    private void setBugs(String[] components, String[] products, String date) {
         requirements = new ArrayList<>();
         for (String component : components) {
             for (String product : products) {
-                for (String status : statuses) {
-                    List<Requirement> reqs = getRequirements(date, status, product, component);
+                //for (String status : statuses) {
+                    List<Requirement> reqs = getRequirements(date, product, component);
                     for (Requirement r : reqs)
                         if (!requirements.contains(r)) requirements.add(r);
-                }
+                //}
             }
         }
     }
 
-    private List<Requirement> getRequirements(String date, String status, String product, String component) {
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,see_also,cc,assigned_to,summary,last_change_time,component," +
-                "&status=" + status.toUpperCase() +
+    private List<Requirement> getRequirements(String date, String product, String component) {
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,status,see_also,cc,assigned_to,summary,last_change_time,component,whiteboard" +
+                //"&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
                 "&creation_time=" + date +
@@ -133,8 +132,11 @@ public class BugzillaService {
                     requirement.setAssigned(!assign.getUsername().toLowerCase().contains("inbox")
                             && !assign.getUsername().toLowerCase().contains("triage") ? assign.getName() : null);
                     requirement.setRequirementParts(Collections.singletonList(new RequirementPart("1", bu.getComponent())));
-                    if (bu.getSee_also() != null )
+                    requirement.setStalebug(bu.getWhiteboard() != null && bu.getWhiteboard().equals("stalebug"));
+                    if (bu.getSee_also() != null ) {
                         requirement.setGerrit(bu.getSee_also().stream().filter(s -> s.contains("https://git.eclipse.org/r/")).findFirst().orElse(null));
+                    }
+                    requirement.setStatus(bu.getStatus());
 
                     reqs.add(requirement);
                 }
@@ -230,7 +232,6 @@ public class BugzillaService {
     public Boolean login(String user, String password, String apiKey) {
         try {
             String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password + "&api_key=" + apiKey;
-            System.out.println(callUrl);
             ResponseEntity<BugzillaToken> response = restTemplate.exchange(
                     callUrl,
                     HttpMethod.GET,

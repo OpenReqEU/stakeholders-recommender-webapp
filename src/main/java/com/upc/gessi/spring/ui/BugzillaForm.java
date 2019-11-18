@@ -44,7 +44,7 @@ public class BugzillaForm extends FormLayout {
         statusField.setItems("open","closed");
 
         datePicker.setLabel("Creation date");
-        datePicker.setValue(LocalDate.of(2015, 1, 1));
+        datePicker.setValue(LocalDate.of(2019, 1, 1));
 
         keywordTool.setLabel("Keyword tool");
         keywordTool.setItems(KeywordEnum.UPC, KeywordEnum.TUGraz);
