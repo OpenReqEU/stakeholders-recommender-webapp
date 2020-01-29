@@ -150,7 +150,7 @@ public class StakeholdersRecommenderService {
                 }
             }
             System.out.println(url);
-            //System.out.println(content.toString());
+            System.out.println(body.toString());
 
             CloseableHttpResponse response = client.execute(httpPost);
             System.out.println("HTTP Request " + httpPost.getMethod());
