@@ -131,7 +131,7 @@ public class BugzillaService {
                     requirement.setEffort(1);
                     requirement.setAssigned(!assign.getUsername().toLowerCase().contains("inbox")
                             && !assign.getUsername().toLowerCase().contains("triage") ? assign.getName() : null);
-                    requirement.setRequirementParts(Collections.singletonList(new RequirementPart("1", bu.getComponent())));
+                    requirement.setRequirementParts(Collections.singletonList(new RequirementPart(bu.getComponent(), bu.getComponent())));
                     requirement.setStalebug(bu.getWhiteboard() != null && bu.getWhiteboard().equals("stalebug"));
                     if (bu.getSee_also() != null ) {
                         requirement.setGerrit(bu.getSee_also().stream().filter(s -> s.contains("https://git.eclipse.org/r/")).findFirst().orElse(null));
