@@ -1,6 +1,6 @@
 package com.upc.gessi.spring.ui;
 
-import com.upc.gessi.spring.ui.UsernameDialog;
+import com.upc.gessi.spring.service.BugzillaService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Label;
@@ -8,12 +8,15 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class UsernameForm extends HorizontalLayout {
 
+    private BugzillaService bugzillaService;
     private String username;
     private Label label;
     private Label mail;
     private Button editUser;
 
-    public UsernameForm() {
+    public UsernameForm(BugzillaService bugzillaService) {
+
+        this.bugzillaService = bugzillaService;
 
         label = new Label("No user selected, please set username");
         label.setClassName("subsubtitle-no-set");
@@ -48,8 +51,8 @@ public class UsernameForm extends HorizontalLayout {
 
 
     public void openUsernameDialog() {
-        UsernameDialog usernameDialog = new UsernameDialog(this, username);
-        usernameDialog.open();
+        LogInForm logInForm = new LogInForm(this, username, bugzillaService);
+        logInForm.open();
     }
 
 }

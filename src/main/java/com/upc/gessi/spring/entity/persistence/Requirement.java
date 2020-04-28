@@ -1,18 +1,22 @@
-package com.upc.gessi.spring.entity;
+package com.upc.gessi.spring.entity.persistence;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
 public class Requirement implements Serializable {
 
+    @Id
     private String id;
     private String description;
     private Integer effort;
     private String modified_at;
     private Integer cc;
+    @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     private List<RequirementPart> requirementParts;
     private String assigned;
     private String gerrit;

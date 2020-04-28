@@ -1,6 +1,8 @@
 package com.upc.gessi.spring.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.upc.gessi.spring.entity.persistence.Person;
+import com.upc.gessi.spring.entity.persistence.Requirement;
 
 import java.io.Serializable;
 

@@ -3,6 +3,9 @@ package com.upc.gessi.spring.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.PropertiesLoader;
 import com.upc.gessi.spring.entity.*;
+import com.upc.gessi.spring.entity.persistence.*;
+import com.upc.gessi.spring.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -17,6 +20,17 @@ import java.util.*;
  */
 @Service
 public class BugzillaService {
+
+    @Autowired
+    private ParticipantRepository participantRepository;
+    @Autowired
+    private PersonRepository personRepository;
+    @Autowired
+    private ResponsibleRepository responsibleRepository;
+    @Autowired
+    private ProjectRepository projectRepository;
+    @Autowired
+    private RequirementRepository requirementRepository;
 
     private final String bugzillaUrl = PropertiesLoader.getProperty("bugzillaUrl");
     private String gerritUrl = PropertiesLoader.getProperty("gerritUrl"); // /changes /accounts
@@ -51,12 +65,22 @@ public class BugzillaService {
      * @param products
      * @param date
      */
-    public void extractInfo(String[] components, String[] products, String date) {
-        setBugs(components, products, date);
+    public void extractInfo(String[] components, String[] products, String[] statuses, String date) {
+        setBugs(components, products, statuses, date);
         extractPersons();
         extractResponsibles();
         extractParticipants();
         extractProject();
+        persistData();
+        System.out.println("Data stored");
+    }
+
+    private void persistData() {
+        requirementRepository.saveAll(requirements);
+        personRepository.saveAll(persons);
+        responsibleRepository.saveAll(responsibles);
+        participantRepository.saveAll(participants);
+        projectRepository.saveAll(project);
     }
 
     private void extractProject() {
@@ -64,10 +88,10 @@ public class BugzillaService {
         p.setId("1");
         List<String> specifiedRequirements=new ArrayList<String>();
 
-        for (Requirement r : requirements) {
+        /*for (Requirement r : requirements) {
             specifiedRequirements.add(r.getId());
-        }
-        p.setSpecifiedRequirements(specifiedRequirements);
+        }*/
+        p.setSpecifiedRequirements(requirements);
 
         List<Project> projList=new ArrayList<>();
         projList.add(p);
@@ -85,22 +109,22 @@ public class BugzillaService {
         participants=part;
     }
 
-    private void setBugs(String[] components, String[] products, String date) {
+    private void setBugs(String[] components, String[] products, String[] statuses, String date) {
         requirements = new ArrayList<>();
         for (String component : components) {
             for (String product : products) {
-                //for (String status : statuses) {
-                    List<Requirement> reqs = getRequirements(date, product, component);
+                for (String status : statuses) {
+                    List<Requirement> reqs = getRequirements(date, product, status, component);
                     for (Requirement r : reqs)
                         if (!requirements.contains(r)) requirements.add(r);
-                //}
+                }
             }
         }
     }
 
-    private List<Requirement> getRequirements(String date, String product, String component) {
+    private List<Requirement> getRequirements(String date, String product, String status, String component) {
         BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,status,see_also,cc,assigned_to,summary,last_change_time,component,whiteboard" +
-                //"&status=" + status.toUpperCase() +
+                "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
                 "&creation_time=" + date +
@@ -229,9 +253,9 @@ public class BugzillaService {
         this.project = project;
     }
 
-    public Boolean login(String user, String password, String apiKey) {
+    public Boolean login(String user, String password) {
         try {
-            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password + "&api_key=" + apiKey;
+            String callUrl = bugzillaUrl + "/rest/login?login=" + user + "&password=" + password;
             ResponseEntity<BugzillaToken> response = restTemplate.exchange(
                     callUrl,
                     HttpMethod.GET,
@@ -239,6 +263,8 @@ public class BugzillaService {
                     new ParameterizedTypeReference<BugzillaToken>() {
                     });
             this.token = response.getBody().getToken();
+            Person p = personRepository.findById(user).orElse(null);
+            if (p == null) personRepository.save(new Person(user, user));
             return true;
         } catch (Exception e) {
             e.printStackTrace();

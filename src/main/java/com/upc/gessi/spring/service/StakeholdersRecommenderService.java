@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upc.gessi.spring.PropertiesLoader;
 import com.upc.gessi.spring.entity.*;
+import com.upc.gessi.spring.entity.persistence.*;
 import com.upc.gessi.spring.exception.NotificationException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -11,15 +12,20 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class StakeholdersRecommenderService {
+
+    @Autowired
+    private RequirementsService requirementsService;
 
     //private static final String stakeholdersRecommenderServiceUrl = "http://localhost:9410/upc/stakeholders-recommender";
     private static final String stakeholdersRecommenderServiceUrl = PropertiesLoader.getProperty("stakeholdersRecommenderUrl");
@@ -61,13 +67,6 @@ public class StakeholdersRecommenderService {
 
     public StakeholdersRecommenderService() {
         batchProcess = new BatchProcess();
-    }
-
-    public static StakeholdersRecommenderService getInstance() {
-        if (instance == null) {
-            instance = new StakeholdersRecommenderService();
-        }
-        return instance;
     }
 
     public List<Requirement> getRequirements(String value, List<String> statuses) {
@@ -122,16 +121,16 @@ public class StakeholdersRecommenderService {
     }
 
     private Person findPerson(String username) throws NotificationException {
-        for (Person p : batchProcess.getPersons()) {
+        for (Person p : requirementsService.getPersons()) {
             if (p.getUsername().equals(username)) return p;
         }
         throw new NotificationException("Person not found");
     }
 
     private Project findProject(Requirement first) throws NotificationException {
-        for (Project p : batchProcess.getProjects()) {
+        for (Project p : requirementsService.getProjects()) {
             if (p.getSpecifiedRequirements() != null
-                    && p.getSpecifiedRequirements().contains(first.getId())) return p;
+                    && p.getSpecifiedRequirements().contains(first)) return p;
         }
         throw new NotificationException("Requirement not found in any project");
     }

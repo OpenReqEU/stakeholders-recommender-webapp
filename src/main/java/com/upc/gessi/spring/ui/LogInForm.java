@@ -1,6 +1,5 @@
 package com.upc.gessi.spring.ui;
 
-import com.upc.gessi.spring.exception.NotificationException;
 import com.upc.gessi.spring.service.BugzillaService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -10,18 +9,24 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class UsernameDialog extends Dialog {
+public class LogInForm extends Dialog {
+
+    @Autowired
+    private BugzillaService bugzillaService;
 
     private UsernameForm usernameForm;
 
     private VerticalLayout verticalLayout ;
     private TextField textField;
     private PasswordField passwordField;
-    private TextField apiKey;
+    //private TextField apiKey;
     private Button setUsername;
 
-    public UsernameDialog(UsernameForm usernameForm, String username) {
+    public LogInForm(UsernameForm usernameForm, String username, BugzillaService bugzillaService) {
+
+        this.bugzillaService = bugzillaService;
 
         setCloseOnOutsideClick(false);
         setCloseOnEsc(false);
@@ -41,9 +46,9 @@ public class UsernameDialog extends Dialog {
         passwordField.setMinWidth("18em");
         passwordField.setRequired(true);
 
-        apiKey = new TextField();
+        /*apiKey = new TextField();
         apiKey.setLabel("API key (only if required)");
-        apiKey.setMinWidth("18em");
+        apiKey.setMinWidth("18em");*/
 
         setUsername = new Button("Log in");
         setUsername.setClassName("custom-button");
@@ -60,7 +65,7 @@ public class UsernameDialog extends Dialog {
         buttons.add(setUsername);
 
         verticalLayout = new VerticalLayout();
-        verticalLayout.add(label, textField, passwordField, apiKey, buttons);
+        verticalLayout.add(label, textField, passwordField, buttons);
 
         add(verticalLayout);
 
@@ -71,7 +76,7 @@ public class UsernameDialog extends Dialog {
     }
 
     private void login() {
-        Boolean b = BugzillaService.getInstance().login(textField.getValue(), passwordField.getValue(), apiKey.getValue());
+        Boolean b = bugzillaService.login(textField.getValue(), passwordField.getValue());
         if (b) {
             usernameForm.setUsername(textField.getValue().trim());
             close();

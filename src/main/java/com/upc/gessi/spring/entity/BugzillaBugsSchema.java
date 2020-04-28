@@ -1,5 +1,7 @@
 package com.upc.gessi.spring.entity;
 
+import com.upc.gessi.spring.entity.persistence.Responsible;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,14 +1,22 @@
-package com.upc.gessi.spring.entity;
+package com.upc.gessi.spring.entity.persistence;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.upc.gessi.spring.entity.persistence.id.ParticipantId;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
+@IdClass(ParticipantId.class)
 public class Participant implements Serializable {
 
     private Integer availability;
+    @Id
     private String person;
+    @Id
     private String project;
 
     public Participant() {

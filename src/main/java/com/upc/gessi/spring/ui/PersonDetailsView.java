@@ -1,7 +1,6 @@
 package com.upc.gessi.spring.ui;
 
-import com.upc.gessi.spring.entity.Person;
-import com.upc.gessi.spring.entity.Requirement;
+import com.upc.gessi.spring.entity.persistence.Person;
 import com.upc.gessi.spring.entity.Skill;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.StyleSheet;

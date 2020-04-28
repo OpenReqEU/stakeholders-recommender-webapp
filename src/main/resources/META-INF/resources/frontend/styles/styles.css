@@ -1,23 +1,23 @@
 .title {
-    font-size: 48px;
+    font-size: 42px;
     color: #3fbeae;
     margin-top: 14px;
 }
 
 .subtitle {
-    font-size: 28px;
+    font-size: 24px;
     color: #3fbeae;
     margin-top: 6px;
 }
 
 .subsubtitle {
-    font-size: 18px;
+    font-size: 16px;
     color: #3fbeae;
     margin-top: 6px;
 }
 
 .subsubtitle-no-set {
-    font-size: 18px;
+    font-size: 16px;
     color: #949494;
     margin-top: 6px;
 }
@@ -39,10 +39,11 @@
 }
 
 .custom-button {
-    font-size: 18px;
+    font-size: 16px;
     background-color: #3fbeae;
     color: #ffffff;
     font-weight: 500;
+    min-width: 6em;
 }
 
 .header-button {
@@ -67,6 +68,7 @@
     background-color: transparent;
     padding: 0;
     margin: 0;
+    font-size: 14px;
 }
 
 .link-person:hover {
@@ -76,6 +78,10 @@
 .link:hover {
     text-decoration: underline;
     cursor: pointer;
+}
+
+vaadin-grid-cell-content {
+    font-size: 14px;
 }
 
 .vaadin-grid tr.v-selected {
@@ -96,4 +102,8 @@
 
 .hr-class {
     margin-top: 8px;
+}
+
+.bugzilla-form {
+    width: 100%;
 }
