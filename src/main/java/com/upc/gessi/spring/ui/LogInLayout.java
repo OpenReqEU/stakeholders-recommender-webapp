@@ -1,6 +1,7 @@
 package com.upc.gessi.spring.ui;
 
 import com.upc.gessi.spring.service.BugzillaService;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Label;
@@ -11,12 +12,12 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class LogInForm extends Dialog {
+public class LogInLayout extends Dialog {
 
     @Autowired
     private BugzillaService bugzillaService;
 
-    private UsernameForm usernameForm;
+    private UsernameLayout usernameLayout;
 
     private VerticalLayout verticalLayout ;
     private TextField textField;
@@ -24,14 +25,14 @@ public class LogInForm extends Dialog {
     //private TextField apiKey;
     private Button setUsername;
 
-    public LogInForm(UsernameForm usernameForm, String username, BugzillaService bugzillaService) {
+    public LogInLayout(UsernameLayout usernameLayout, String username, BugzillaService bugzillaService) {
 
         this.bugzillaService = bugzillaService;
 
         setCloseOnOutsideClick(false);
         setCloseOnEsc(false);
 
-        this.usernameForm = usernameForm;
+        this.usernameLayout = usernameLayout;
 
         Label label = new Label("Log in form");
         label.setClassName("subtitle");
@@ -55,8 +56,7 @@ public class LogInForm extends Dialog {
         setUsername.addClickListener(event -> {
             login();
         });
-
-
+        setUsername.addClickShortcut(Key.ENTER);
 
         if (username != null)
             textField.setValue(username);
@@ -78,7 +78,7 @@ public class LogInForm extends Dialog {
     private void login() {
         Boolean b = bugzillaService.login(textField.getValue(), passwordField.getValue());
         if (b) {
-            usernameForm.setUsername(textField.getValue().trim());
+            usernameLayout.setUsername(textField.getValue().trim());
             close();
         } else {
             Notification notification = new Notification(

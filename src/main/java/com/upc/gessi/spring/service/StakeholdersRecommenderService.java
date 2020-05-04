@@ -53,7 +53,7 @@ public class StakeholdersRecommenderService {
         for (Project p : project) {
             List<String> forbbidenRequirements = requirements.stream().filter(r -> (r.getStalebug() != null && r.getStalebug()))
                     .map(Requirement::getId).collect(Collectors.toList());
-            p.setSpecifiedRequirements(p.getSpecifiedRequirements().stream().filter(s -> !forbbidenRequirements.contains(s)).collect(Collectors.toList()));
+            p.setSpecifiedRequirements(p.getSpecifiedRequirements().stream().filter(s -> !forbbidenRequirements.contains(s.getId())).collect(Collectors.toList()));
         }
 
         batchProcess = new BatchProcess();
@@ -103,7 +103,7 @@ public class StakeholdersRecommenderService {
         Recommend recommend = new Recommend();
         recommend.setProject(findProject(first));
         recommend.setRequirement(first);
-        recommend.setUser(findPerson(username));
+        recommend.setUser(new Person(username, username));
 
         String response = sendPostHttpRequest(stakeholdersRecommenderServiceUrl + "/recommend?" +
                         "k=" + k +

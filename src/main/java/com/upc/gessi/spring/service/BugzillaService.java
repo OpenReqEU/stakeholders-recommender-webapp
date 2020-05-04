@@ -263,8 +263,6 @@ public class BugzillaService {
                     new ParameterizedTypeReference<BugzillaToken>() {
                     });
             this.token = response.getBody().getToken();
-            Person p = personRepository.findById(user).orElse(null);
-            if (p == null) personRepository.save(new Person(user, user));
             return true;
         } catch (Exception e) {
             e.printStackTrace();

@@ -3,9 +3,7 @@ package com.upc.gessi.spring.service;
 import com.upc.gessi.spring.entity.persistence.Person;
 import com.upc.gessi.spring.entity.persistence.Project;
 import com.upc.gessi.spring.entity.persistence.Requirement;
-import com.upc.gessi.spring.repository.PersonRepository;
-import com.upc.gessi.spring.repository.ProjectRepository;
-import com.upc.gessi.spring.repository.RequirementRepository;
+import com.upc.gessi.spring.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +20,10 @@ public class RequirementsService {
     private RequirementRepository requirementRepository;
     @Autowired
     private PersonRepository personRepository;
+    @Autowired
+    private ParticipantRepository participantRepository;
+    @Autowired
+    private ResponsibleRepository responsibleRepository;
 
     public List<Requirement> findRequirements(String text) {
         return requirementRepository.findByDescription(text.toLowerCase());
@@ -33,5 +35,13 @@ public class RequirementsService {
 
     public List<Project> getProjects() {
         return StreamSupport.stream(projectRepository.findAll().spliterator(), false).collect(Collectors.toList());
+    }
+
+    public void deleteRequirements() {
+        projectRepository.deleteAll();
+        personRepository.deleteAll();
+        participantRepository.deleteAll();
+        responsibleRepository.deleteAll();
+        requirementRepository.deleteAll();
     }
 }

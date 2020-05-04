@@ -50,6 +50,10 @@
     margin-top: 36px;
 }
 
+.delete-button {
+    min-width: 10em;
+}
+
 .filter {
     width: 300px;
 }

@@ -1,12 +1,13 @@
 package com.upc.gessi.spring.ui;
 
 import com.upc.gessi.spring.service.BugzillaService;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-public class UsernameForm extends HorizontalLayout {
+public class UsernameLayout extends HorizontalLayout {
 
     private BugzillaService bugzillaService;
     private String username;
@@ -14,7 +15,7 @@ public class UsernameForm extends HorizontalLayout {
     private Label mail;
     private Button editUser;
 
-    public UsernameForm(BugzillaService bugzillaService) {
+    public UsernameLayout(BugzillaService bugzillaService) {
 
         this.bugzillaService = bugzillaService;
 
@@ -49,10 +50,14 @@ public class UsernameForm extends HorizontalLayout {
         return username;
     }
 
+    LogInLayout logInLayout;
 
     public void openUsernameDialog() {
-        LogInForm logInForm = new LogInForm(this, username, bugzillaService);
-        logInForm.open();
+        logInLayout = new LogInLayout(this, username, bugzillaService);
+        logInLayout.open();
     }
 
+    public void setOnCloseListener(ComponentEventListener e) {
+        logInLayout.addDialogCloseActionListener(e);
+    }
 }

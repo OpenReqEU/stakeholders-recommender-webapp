@@ -10,6 +10,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Hr;
@@ -30,7 +31,6 @@ import com.vaadin.flow.server.PWA;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class MainView extends VerticalLayout {
     private Grid<Requirement> requirementsGrid = new Grid<>(Requirement.class);
     private Grid<Recommendation> recommendationGrid = new Grid<>(Recommendation.class);
     private BugzillaForm bugzillaForm;
-    private UsernameForm usernameForm;
+    private UsernameLayout usernameLayout;
 
     private TextField filterText = new TextField();
 
@@ -70,7 +70,7 @@ public class MainView extends VerticalLayout {
 
         bugzillaForm = new BugzillaForm();
         bugzillaForm.setClassName("bugzilla-form");
-        usernameForm = new UsernameForm(bugzillaService);
+        usernameLayout = new UsernameLayout(bugzillaService);
 
         selectedRequirement = null;
 
@@ -98,16 +98,18 @@ public class MainView extends VerticalLayout {
         Button ccUser = configureCcUser();
         Button undoRejection = configureUndoRejection();
         Button loadData = configureLoadData();
+        Button dropDatabase = configureDropDatabase();
 
         //BUILD LAYOUT
-        buildLayout(header, leftPanel, rejectRecommendation, acceptRecommendation, ccUser, undoRejection, loadData);
+        buildLayout(header, leftPanel, rejectRecommendation, acceptRecommendation, ccUser, undoRejection, loadData, dropDatabase);
 
     }
 
     private void buildLayout(HorizontalLayout header, VerticalLayout leftPanel, Button rejectRecommendation, Button acceptRecommendation,
-                             Button ccUser, Button undoRejection, Button loadData) {
+                             Button ccUser, Button undoRejection, Button loadData, Button dropDatabase) {
         HorizontalLayout recommendationButtons = new HorizontalLayout();
         recommendationButtons.add(ccUser, acceptRecommendation, rejectRecommendation, undoRejection);
+        recommendationButtons.getClassNames().add("bugzilla-form");
 
         VerticalLayout rightPanel = new VerticalLayout();
         rightPanel.add(recommendationButtons);
@@ -122,7 +124,7 @@ public class MainView extends VerticalLayout {
         VerticalLayout toolbar = new VerticalLayout();
 
 
-        subheader.add(bugzillaForm, loadData);
+        subheader.add(bugzillaForm, loadData, dropDatabase);
         subheader.setClassName("subheader");
 
         toolbar.add(subheader);
@@ -132,13 +134,55 @@ public class MainView extends VerticalLayout {
         add(header, toolbar, new Hr(), mainPanel);
 
         setSizeFull();
-        if (usernameForm.getUsername() == null)
-            usernameForm.openUsernameDialog();
-        else
-            usernameForm.setUsername(usernameForm.getUsername());
+        if (usernameLayout.getUsername() == null) {
+            usernameLayout.openUsernameDialog();
+        }
+        else {
+            usernameLayout.setUsername(usernameLayout.getUsername());
+        }
+        updateList(false);
 
-        updateList();
 
+    }
+
+    private Button configureDropDatabase() {
+        Button dropDatabase = new Button("Drop database");
+        dropDatabase.getElement().setProperty("title", "Deletes requirements from local database");
+        dropDatabase.getClassNames().add("custom-button");
+        dropDatabase.getClassNames().add("header-button");
+        dropDatabase.getClassNames().add("delete-button");
+
+        //Dialog
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(false);
+        dialog.setCloseOnOutsideClick(false);
+        Button confirmButton = new Button("Confirm", event -> {
+            dropDatabase();
+            dialog.close();
+        });
+        Button cancelButton = new Button("Cancel", event -> {
+            dialog.close();
+        });
+        VerticalLayout dialogLayout = new VerticalLayout();
+        HorizontalLayout buttonsLayout = new HorizontalLayout();
+        Label alert = new Label("All requirements will be deleted. Do you wish to continue?");
+
+        buttonsLayout.add(confirmButton, cancelButton);
+        dialogLayout.add(alert, buttonsLayout);
+
+        dialog.add(dialogLayout);
+
+        dropDatabase.addClickListener(event -> {
+            dialog.open();
+        });
+
+        return dropDatabase;
+    }
+
+    private void dropDatabase() {
+        requirementsService.deleteRequirements();
+        updateList(false);
+        emptyRecommendationList();
     }
 
     private Button configureLoadData() {
@@ -146,27 +190,59 @@ public class MainView extends VerticalLayout {
         loadData.getElement().setProperty("title", "Import requirements from Eclipse Bugzilla repository");
         loadData.getClassNames().add("custom-button");
         loadData.getClassNames().add("header-button");
-        loadData.addClickListener(event -> {
+
+        //Dialog
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(false);
+        dialog.setCloseOnOutsideClick(false);
+
+        Button confirmButton = new Button("Confirm", event -> {
+            dialog.close();
             try {
-                if (!bugzillaForm.isFieldEmpty()) {
-
-                    bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getProducts(), bugzillaForm.getStatuses(),
-                            bugzillaForm.getDate());
-
-                    stakeholdersRecommenderService.setBatchProcess(usernameForm.getUsername(), bugzillaService.getParticipants(),
-                            bugzillaService.getPersons(), bugzillaService.getProject(),
-                            bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords(),
-                            bugzillaForm.getKeywordTool());
-
-                    updateList();
-                    //emptyRecommendationList();
-                }
-            } catch (Exception e) {
+                importRequirements();
+            } catch (IOException | NotificationException e) {
                 e.printStackTrace();
-                sendNotification("There was a problem reaching the Eclipse Bugzilla service. Please contact an administrator");
             }
         });
+        Button cancelButton = new Button("Cancel", event -> {
+            dialog.close();
+        });
+        VerticalLayout dialogLayout = new VerticalLayout();
+        HorizontalLayout buttonsLayout = new HorizontalLayout();
+        Label alert = new Label("Existing requirements will be updated. Do you wish to continue?");
+
+        buttonsLayout.add(confirmButton, cancelButton);
+        dialogLayout.add(alert, buttonsLayout);
+
+        dialog.add(dialogLayout);
+
+        loadData.addClickListener(event -> {
+                try {
+                    if (!bugzillaForm.isFieldEmpty()) {
+                        if (requirementsService.findRequirements("").size() > 0)
+                            dialog.open();
+                        else
+                            importRequirements();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    sendNotification("There was a problem reaching the Eclipse Bugzilla service. Please contact an administrator");
+                }
+        });
         return loadData;
+    }
+
+    private void importRequirements() throws IOException, NotificationException {
+        bugzillaService.extractInfo(bugzillaForm.getComponents(), bugzillaForm.getProducts(), bugzillaForm.getStatuses(),
+                bugzillaForm.getDate());
+
+        stakeholdersRecommenderService.setBatchProcess(usernameLayout.getUsername(), bugzillaService.getParticipants(),
+                bugzillaService.getPersons(), bugzillaService.getProject(),
+                bugzillaService.getRequirements(), bugzillaService.getResponsibles(), bugzillaForm.getKeywords(),
+                bugzillaForm.getKeywordTool());
+
+        updateList(true);
+        emptyRecommendationList();
     }
 
     private Button configureUndoRejection() {
@@ -176,7 +252,7 @@ public class MainView extends VerticalLayout {
         undoRejection.addClickListener(event -> {
             if (lastRejection != null) {
                 try {
-                    this.stakeholdersRecommenderService.undoRejection(usernameForm.getUsername(), lastRejection);
+                    this.stakeholdersRecommenderService.undoRejection(usernameLayout.getUsername(), lastRejection);
                     if (selectedRequirement.getId().equals(lastRejection.getRequirement().getId())) {
                         this.recommendations.add(lastRejection);
                         this.recommendations.sort(Comparator.comparingDouble(Recommendation::getAppropiatenessScoreDouble)
@@ -237,7 +313,7 @@ public class MainView extends VerticalLayout {
                 if (selectedRecommendation != null) {
                     lastRejection = selectedRecommendation;
 
-                    this.stakeholdersRecommenderService.rejectRecommendation(selectedRecommendation, usernameForm.getUsername());
+                    this.stakeholdersRecommenderService.rejectRecommendation(selectedRecommendation, usernameLayout.getUsername());
 
                     this.recommendations.remove(selectedRecommendation);
                     recommendationGrid.setItems(this.recommendations);
@@ -289,12 +365,12 @@ public class MainView extends VerticalLayout {
         Button recommend = new Button();
         recommend.setText("Recommend stakeholders");
         recommend.addClickListener(event -> {
-            if (selectedRequirement != null && usernameForm.getUsername() != null) {
+            if (selectedRequirement != null && usernameLayout.getUsername() != null) {
                 recommend(stepperField.getValue().intValue());
             }
             else if (selectedRequirement == null){
                 sendNotification("Please select a requirement");
-            } else if (usernameForm.getUsername() == null) {
+            } else if (usernameLayout.getUsername() == null) {
                 sendNotification("Please set a user");
             }
         });
@@ -324,7 +400,7 @@ public class MainView extends VerticalLayout {
         filterText.setPlaceholder("Search...");
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.EAGER);
-        filterText.addValueChangeListener(e -> updateList());
+        filterText.addValueChangeListener(e -> updateList(false));
         filterText.setClassName("filter");
 
         // Or you can use an ordinary function to setup the component
@@ -362,8 +438,8 @@ public class MainView extends VerticalLayout {
         HorizontalLayout header = new HorizontalLayout();
         Label title = new Label("Stakeholders Recommender");
         title.setClassName("title");
-        usernameForm.setClassName("login-box");
-        header.add(logo, title, usernameForm);
+        usernameLayout.setClassName("login-box");
+        header.add(logo, title, usernameLayout);
         header.setClassName("header");
         return header;
     }
@@ -408,13 +484,15 @@ public class MainView extends VerticalLayout {
 
     List<Recommendation> recommendations;
 
-    private void updateList() {
+    private void updateList(Boolean alert) {
         //List<Requirement> reqs = stakeholdersRecommenderService.getRequirements(filterText.getValue(), Arrays.asList(bugzillaForm.getStatuses()));
         List<Requirement> reqs = requirementsService.findRequirements(filterText.getValue());
         requirementsGrid.setItems(reqs);
         System.out.println("Nº reqs: " + reqs.size());
-        if (reqs.size() == 0) {
-            sendNotification("No requirements found");
+        if (alert) {
+            if (reqs.size() == 0) {
+                sendNotification("No requirements found");
+            }
         }
     }
 
@@ -430,7 +508,7 @@ public class MainView extends VerticalLayout {
         List<Recommendation> recommendations = null;
         try {
             recommendations = stakeholdersRecommenderService.recommend(selectedRequirement,
-                    usernameForm.getUsername(), k);
+                    usernameLayout.getUsername(), k);
             if (selectedRequirement.getGerrit() != null) {
                 bugzillaService.addGerritUserToList(selectedRequirement, recommendations, k);
             }
