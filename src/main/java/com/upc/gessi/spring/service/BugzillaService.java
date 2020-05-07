@@ -123,7 +123,7 @@ public class BugzillaService {
     }
 
     private List<Requirement> getRequirements(String date, String product, String status, String component) {
-        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=id,status,see_also,cc,assigned_to,summary,last_change_time,component,whiteboard" +
+        BugzillaBugsSchema response=calltoServiceBugs("?include_fields=product,id,status,see_also,cc,assigned_to,summary,last_change_time,component,whiteboard" +
                 "&status=" + status.toUpperCase() +
                 "&product=" + product +
                 "&component=" + component +
@@ -157,6 +157,8 @@ public class BugzillaService {
                             && !assign.getUsername().toLowerCase().contains("triage") ? assign.getName() : null);
                     requirement.setRequirementParts(Collections.singletonList(new RequirementPart(bu.getComponent(), bu.getComponent())));
                     requirement.setStalebug(bu.getWhiteboard() != null && bu.getWhiteboard().equals("stalebug"));
+                    requirement.setProduct(bu.getProduct());
+                    requirement.setComponent(bu.getComponent());
                     if (bu.getSee_also() != null ) {
                         requirement.setGerrit(bu.getSee_also().stream().filter(s -> s.contains("https://git.eclipse.org/r/")).findFirst().orElse(null));
                     }

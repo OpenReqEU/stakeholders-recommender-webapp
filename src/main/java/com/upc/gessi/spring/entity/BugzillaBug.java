@@ -15,6 +15,7 @@ public class BugzillaBug implements Serializable {
     String last_change_time;
     String component;
     String whiteboard;
+    String product;
     List<String> cc;
     List<String> see_also;
     AssignedDetail assigned_to_detail;
@@ -97,5 +98,13 @@ public class BugzillaBug implements Serializable {
 
     public void setWhiteboard(String whiteboard) {
         this.whiteboard = whiteboard;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
     }
 }

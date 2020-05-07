@@ -44,6 +44,7 @@
     color: #ffffff;
     font-weight: 500;
     min-width: 6em;
+    cursor: pointer;
 }
 
 .header-button {

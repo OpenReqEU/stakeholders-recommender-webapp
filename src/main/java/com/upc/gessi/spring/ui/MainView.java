@@ -98,15 +98,16 @@ public class MainView extends VerticalLayout {
         Button ccUser = configureCcUser();
         Button undoRejection = configureUndoRejection();
         Button loadData = configureLoadData();
+        Button filterData = configureFilterData();
         Button dropDatabase = configureDropDatabase();
 
         //BUILD LAYOUT
-        buildLayout(header, leftPanel, rejectRecommendation, acceptRecommendation, ccUser, undoRejection, loadData, dropDatabase);
+        buildLayout(header, leftPanel, rejectRecommendation, acceptRecommendation, ccUser, undoRejection, loadData, dropDatabase, filterData);
 
     }
 
     private void buildLayout(HorizontalLayout header, VerticalLayout leftPanel, Button rejectRecommendation, Button acceptRecommendation,
-                             Button ccUser, Button undoRejection, Button loadData, Button dropDatabase) {
+                             Button ccUser, Button undoRejection, Button loadData, Button dropDatabase, Button filterData) {
         HorizontalLayout recommendationButtons = new HorizontalLayout();
         recommendationButtons.add(ccUser, acceptRecommendation, rejectRecommendation, undoRejection);
         recommendationButtons.getClassNames().add("bugzilla-form");
@@ -124,7 +125,7 @@ public class MainView extends VerticalLayout {
         VerticalLayout toolbar = new VerticalLayout();
 
 
-        subheader.add(bugzillaForm, loadData, dropDatabase);
+        subheader.add(bugzillaForm, loadData, filterData, dropDatabase);
         subheader.setClassName("subheader");
 
         toolbar.add(subheader);
@@ -183,6 +184,19 @@ public class MainView extends VerticalLayout {
         requirementsService.deleteRequirements();
         updateList(false);
         emptyRecommendationList();
+    }
+
+    private Button configureFilterData() {
+        Button filterData = new Button("Filter");
+        filterData.getElement().setProperty("title", "Filters imported requirements data");
+        filterData.getClassNames().add("custom-button");
+        filterData.getClassNames().add("header-button");
+
+        filterData.addClickListener(buttonClickEvent -> {
+            updateList(true);
+        });
+
+        return filterData;
     }
 
     private Button configureLoadData() {
@@ -416,6 +430,8 @@ public class MainView extends VerticalLayout {
         requirementsGrid.removeColumnByKey("gerrit");
         requirementsGrid.removeColumnByKey("status");
         requirementsGrid.removeColumnByKey("stalebug");
+        requirementsGrid.removeColumnByKey("product");
+        requirementsGrid.removeColumnByKey("component");
 
         requirementsGrid.addColumns("description", "cc", "modified_at", "assigned");
         requirementsGrid.getColumnByKey("description").setFlexGrow(10).setResizable(true);
@@ -486,12 +502,15 @@ public class MainView extends VerticalLayout {
 
     private void updateList(Boolean alert) {
         //List<Requirement> reqs = stakeholdersRecommenderService.getRequirements(filterText.getValue(), Arrays.asList(bugzillaForm.getStatuses()));
-        List<Requirement> reqs = requirementsService.findRequirements(filterText.getValue());
+        List<Requirement> reqs = requirementsService.findRequirements(filterText.getValue(), bugzillaForm.getProducts(),
+                bugzillaForm.getComponents(), bugzillaForm.getStatuses(), bugzillaForm.getDate());
         requirementsGrid.setItems(reqs);
         System.out.println("Nº reqs: " + reqs.size());
         if (alert) {
             if (reqs.size() == 0) {
                 sendNotification("No requirements found");
+            } else {
+                sendNotification(reqs.size() + " requirements found");
             }
         }
     }

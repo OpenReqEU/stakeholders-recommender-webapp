@@ -128,11 +128,12 @@ public class StakeholdersRecommenderService {
     }
 
     private Project findProject(Requirement first) throws NotificationException {
-        for (Project p : requirementsService.getProjects()) {
+        /*for (Project p : requirementsService.getProjects()) {
             if (p.getSpecifiedRequirements() != null
                     && p.getSpecifiedRequirements().contains(first)) return p;
         }
-        throw new NotificationException("Requirement not found in any project");
+        throw new NotificationException("Requirement not found in any project");*/
+        return requirementsService.getProjects().get(0);
     }
 
     private String sendPostHttpRequest(String url, StringEntity body) throws IOException, NotificationException {

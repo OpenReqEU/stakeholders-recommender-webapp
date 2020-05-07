@@ -23,6 +23,10 @@ public class Requirement implements Serializable {
     private Boolean stalebug;
     private String status;
 
+    //Metadata features for filtering
+    private String product;
+    private String component;
+
     public Requirement() {
 
     }
@@ -116,6 +120,22 @@ public class Requirement implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getComponent() {
+        return component;
+    }
+
+    public void setComponent(String component) {
+        this.component = component;
     }
 
     @Override
